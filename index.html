@@ -129,7 +129,7 @@ html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-fa
 <div id="app">
 
   <div id="topbar">
-    <div id="topbar-logo">DARREN SHAN <span id="topbar-sub">Select a Series</span></div>
+    <div id="topbar-logo"><span id="topbar-title">DARREN SHAN</span> <span id="topbar-sub">Select a Series</span></div>
     <button class="icon-btn" id="sort-btn" aria-label="Sort" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
     </button>
@@ -378,9 +378,8 @@ function enterSeries(id) {
   loadState();
   sortAlpha = false;
 
-  document.getElementById('topbar-logo').textContent = currentSeries.name.toUpperCase();
+  document.getElementById('topbar-title').textContent = currentSeries.name.toUpperCase();
   document.getElementById('topbar-sub').textContent = currentSeries.sub + ' · Complete Series';
-  document.getElementById('topbar-sub').style.display = 'block';
   document.getElementById('sort-btn').style.display = 'flex';
   document.getElementById('library-label').textContent = 'Complete Series';
 
@@ -698,7 +697,7 @@ function showView(id) {
   document.getElementById('topbar').style.display = inReader ? 'none' : 'flex';
   document.getElementById('sort-btn').style.display = (inSeries || inReader) ? 'none' : 'flex';
   if (inSeries) {
-    document.getElementById('topbar-logo').textContent = 'DARREN SHAN';
+    document.getElementById('topbar-title').textContent = 'DARREN SHAN';
     document.getElementById('topbar-sub').textContent  = 'Select a Series';
   }
 }
