@@ -75,11 +75,12 @@ html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-fa
 .book-progress-fill{height:100%;background:var(--blood2);border-radius:1px;transition:width .4s}
 
 /* READER */
-#reader-topbar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--ink2);border-bottom:1px solid var(--border);flex-shrink:0;min-height:52px;transition:transform .28s ease,opacity .28s ease;position:relative;z-index:30}
+#view-reader{background:var(--page-bg)}
+#reader-topbar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--page-bg);border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;min-height:52px;transition:transform .28s ease,opacity .28s ease,background .3s ease;position:relative;z-index:30}
 #reader-title{flex:1;font-size:.82rem;font-family:'Playfair Display',serif;font-style:italic;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #reader-page-info{font-size:.72rem;color:var(--text-dim);white-space:nowrap;flex-shrink:0}
 #reader-content{flex:1;position:relative;overflow:hidden;background:var(--page-bg)}
-.page-slot{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:var(--page-bg);transition:transform .32s cubic-bezier(.4,0,.2,1);will-change:transform}
+.page-slot{position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px;display:flex;align-items:center;justify-content:center;background:var(--page-bg);transition:transform .32s cubic-bezier(.4,0,.2,1);will-change:transform}
 .page-slot canvas{display:block;max-width:100%;max-height:100%}
 .tint-sepia {filter:sepia(.7) brightness(.95)}
 .tint-warm  {filter:sepia(.3) saturate(1.2) brightness(1.02)}
@@ -931,13 +932,13 @@ document.getElementById('back-btn').addEventListener('click', () => {
 // (including the gap left by the sliding topbar in immersive mode) always
 // looks like the page, not a random grey or black.
 const TINT_BG = {
-  normal: '#0a0a0a',   // near-black — PDF white looks white on this
-  sepia:  '#2b1f0e',   // dark warm brown
-  warm:   '#1f1a0f',   // dark warm
-  night:  '#d4d4d4',   // night inverts, so bg should be light
-  cool:   '#0a0e14',   // dark cool blue
-  hicon:  '#000000',   // high contrast — pure black
-  green:  '#0a150a',   // dark green
+  normal: '#000000',
+  sepia:  '#2b1f0e',
+  warm:   '#1f1a0f',
+  night:  '#d4d4d4',
+  cool:   '#0a0e14',
+  hicon:  '#000000',
+  green:  '#0a150a',
 };
 
 function setPageBg(tintId) {
