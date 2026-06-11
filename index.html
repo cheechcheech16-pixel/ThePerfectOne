@@ -556,12 +556,12 @@ function slot(name) {
 }
 
 // Place slots instantly (no animation)
-// next = right (+100%), prev = left (-100%)
-// swipe left = next page, swipe right = prev page
+// next = below (+100%), prev = above (-100%)
+// swipe up = next page, swipe down = prev page
 function placeSlots() {
-  slot('cur') .style.cssText = 'transition:none;transform:translateX(0)';
-  slot('next').style.cssText = 'transition:none;transform:translateX(100%)';
-  slot('prev').style.cssText = 'transition:none;transform:translateX(-100%)';
+  slot('cur') .style.cssText = 'transition:none;transform:translateY(0)';
+  slot('next').style.cssText = 'transition:none;transform:translateY(100%)';
+  slot('prev').style.cssText = 'transition:none;transform:translateY(-100%)';
 }
 
 // Render one PDF page into a slot element
@@ -641,17 +641,20 @@ async function gotoPage(n) {
 }
 
 // ─── ZOOM + PAN + SWIPE ───────────────────────────────────────────
-// Page flips: horizontal swipe (left = next, right = prev). Always.
+// Page flips are VERTICAL only. Always. Swipe up = next, swipe down = prev.
 //
-// Lock OFF: pinch to zoom freely. Swipe left/right flips pages.
-//           Zoom & pan reset on each page turn.
+// Lock OFF: pinch to zoom. Single finger swipes up/down to flip pages.
+//           Zoom resets on page turn.
 //
-// Lock ON:  pinch BLOCKED — zoom frozen. Vertical drag pans the canvas
-//           so you can read all the text. Horizontal swipe still flips pages.
+// Lock ON:  pinch BLOCKED — zoom frozen at your preferred level.
+//           Vertical drag pans the canvas so you can read all the text.
+//           Swipe up/down STILL flips pages — detected from total travel
+//           distance since finger-down, NOT the incremental pan delta,
+//           so panning never accidentally blocks a page flip.
 
 let navLocked = false;
-const SWIPE_MIN = 60;  // px needed to commit a page flip
-const DEADZONE  = 8;   // px before axis is decided
+const SWIPE_MIN = 50;  // total px from finger-down to commit a page flip
+const DEADZONE  = 6;   // px before we start tracking
 
 // ── zoom/pan state ────────────────────────────────────────────────
 let zoomLevel  = 1;
@@ -667,8 +670,7 @@ function setScrollLock(on) {
   document.getElementById('lock-icon-on') .style.display = on ? 'inline': 'none';
   document.getElementById('scroll-lock-btn').classList.toggle('lock-on', on);
   if (!on) { zoomLevel = 1; panOffsetX = 0; panOffsetY = 0; applyTransform(); }
-  toast(on ? 'Lock ON — drag ↕ to pan, swipe ↔ to flip'
-           : 'Lock OFF — pinch to zoom, swipe ↔ to flip');
+  toast(on ? 'Lock ON — drag to pan, swipe to flip' : 'Lock OFF — pinch to zoom, swipe to flip');
 }
 
 document.getElementById('scroll-lock-btn').addEventListener('click', e => {
@@ -676,7 +678,6 @@ document.getElementById('scroll-lock-btn').addEventListener('click', e => {
   setScrollLock(!scrollLockOn);
 });
 
-// Apply zoom+pan transform to the canvas inside cur slot
 function applyTransform() {
   const canvas = slot('cur') && slot('cur').querySelector('canvas');
   if (!canvas) return;
@@ -691,7 +692,16 @@ function applyTransform() {
 
 function clampPan() {
   const canvas = slot('cur') && slot('cur').querySelector('canvas');
-  if (!canvas || zoomLevel <= 1) { panOffsetX = 0; panOffsetY = 0; return; }
+  if (!canvas) return;
+  if (zoomLevel <= 1) {
+    // At zoom=1 only clamp X to 0 (no horizontal pan at normal zoom)
+    // Y pan is allowed in lock mode so do NOT zero it here
+    panOffsetX = 0;
+    // Clamp Y so you can't pan past the canvas edges
+    const maxY = Math.max(0, canvas.offsetHeight - rc.clientHeight);
+    panOffsetY = Math.max(-maxY, Math.min(0, panOffsetY));
+    return;
+  }
   const maxX = Math.max(0, (canvas.offsetWidth  * zoomLevel - rc.clientWidth)  / 2);
   const maxY = Math.max(0, (canvas.offsetHeight * zoomLevel - rc.clientHeight) / 2);
   panOffsetX = Math.max(-maxX, Math.min(maxX, panOffsetX));
@@ -699,12 +709,15 @@ function clampPan() {
 }
 
 function resetTransform() {
-  zoomLevel = 1; panOffsetX = 0; panOffsetY = 0;
-  applyTransform();
+  zoomLevel = 1; panOffsetX = 0; panOffsetY = 0; applyTransform();
 }
 
 // ── touch state ───────────────────────────────────────────────────
-let tx0=0, ty0=0, txLast=0, tyLast=0, dragging=false, axis=null;
+// ty0/tx0   = finger position at touchstart — NEVER updated mid-drag
+//             used to measure total swipe distance for page-flip detection
+// tyLast    = finger position last frame — updated every move
+//             used only for incremental pan delta in lock mode
+let tx0=0, ty0=0, tyLast=0, txLast=0, dragging=false;
 let pinching=false, pinchDist0=0, zoomAtPinch=1;
 
 function getTouchDist(e) {
@@ -718,75 +731,68 @@ const rc = document.getElementById('reader-content');
 
 rc.addEventListener('touchstart', e => {
   if (navLocked) return;
-
   if (e.touches.length === 2) {
-    if (scrollLockOn) { e.preventDefault(); return; } // no pinch when locked
+    if (scrollLockOn) { e.preventDefault(); return; }
     e.preventDefault();
-    pinching = true; dragging = false; axis = null;
-    pinchDist0 = getTouchDist(e);
-    zoomAtPinch = zoomLevel;
+    pinching = true; dragging = false;
+    pinchDist0 = getTouchDist(e); zoomAtPinch = zoomLevel;
     return;
   }
-
   pinching = false;
   tx0 = txLast = e.touches[0].clientX;
   ty0 = tyLast = e.touches[0].clientY;
-  dragging = false; axis = null;
+  dragging = false;
 }, {passive:false});
 
 rc.addEventListener('touchmove', e => {
   if (navLocked) { e.preventDefault(); return; }
 
-  // ── pinch zoom ───────────────────────────────────────────────────
+  // pinch zoom (lock OFF only)
   if (e.touches.length === 2) {
     if (scrollLockOn) { e.preventDefault(); return; }
     e.preventDefault();
     if (!pinching) return;
-    const ratio = getTouchDist(e) / pinchDist0;
-    zoomLevel = Math.max(1, Math.min(5, zoomAtPinch * ratio));
+    zoomLevel = Math.max(1, Math.min(5, zoomAtPinch * getTouchDist(e) / pinchDist0));
     if (zoomLevel === 1) { panOffsetX = 0; panOffsetY = 0; }
     clampPan(); applyTransform();
     return;
   }
-
   if (pinching) return;
 
-  const dx = e.touches[0].clientX - tx0;
-  const dy = e.touches[0].clientY - ty0;
-  const adx = Math.abs(dx), ady = Math.abs(dy);
+  const curY = e.touches[0].clientY;
+  const curX = e.touches[0].clientX;
+  // total distance from finger-down (for flip detection)
+  const totalDy = curY - ty0;
+  const totalDx = curX - tx0;
+  // incremental delta from last frame (for smooth pan)
+  const deltaY = curY - tyLast;
+  const deltaX = curX - txLast;
 
-  // Decide axis once we're past the deadzone
-  if (!axis && (adx > DEADZONE || ady > DEADZONE)) {
-    axis = adx > ady ? 'x' : 'y';
-  }
-  if (!axis) return;
+  if (!dragging && Math.abs(totalDy) < DEADZONE && Math.abs(totalDx) < DEADZONE) return;
 
   e.preventDefault();
   dragging = true;
+  tyLast = curY; txLast = curX;
 
-  if (axis === 'y') {
-    // ── vertical: pan the canvas (both modes) ───────────────────────
-    const delta = e.touches[0].clientY - tyLast;
-    tyLast = e.touches[0].clientY;
-    panOffsetY += delta;
+  if (scrollLockOn) {
+    // Pan canvas vertically — ty0 stays frozen so flip detection still works
+    panOffsetY += deltaY;
     clampPan(); applyTransform();
     return;
   }
 
-  // ── horizontal: page-flip preview (only when not zoomed in) ───────
   if (zoomLevel > 1) {
-    // zoomed — horizontal drags pan instead
-    const delta = e.touches[0].clientX - txLast;
-    txLast = e.touches[0].clientX;
-    panOffsetX += delta;
+    // Zoomed in, lock off — pan in any direction
+    panOffsetX += deltaX; panOffsetY += deltaY;
     clampPan(); applyTransform();
     return;
   }
 
-  // Slide slots left/right for page-flip preview
-  slot('cur') .style.cssText = `transition:none;transform:translateX(${dx}px)`;
-  slot('next').style.cssText = `transition:none;transform:translateX(calc(100% + ${dx}px))`;
-  slot('prev').style.cssText = `transition:none;transform:translateX(calc(-100% + ${dx}px))`;
+  // Normal: drag slots vertically for page-flip preview
+  // Use totalDy here so slots follow the full finger position
+  slot('cur') .style.cssText = `transition:none;transform:translateY(${totalDy}px)`;
+  slot('next').style.cssText = `transition:none;transform:translateY(calc(100% + ${totalDy}px))`;
+  slot('prev').style.cssText = `transition:none;transform:translateY(calc(-100% + ${totalDy}px))`;
 }, {passive:false});
 
 rc.addEventListener('touchend', e => {
@@ -795,10 +801,9 @@ rc.addEventListener('touchend', e => {
   if (pinching) return;
 
   const touch = e.changedTouches[0];
-  const dx = touch.clientX - tx0;
-  const dy = touch.clientY - ty0;
+  // Total swipe distance from finger-down — unaffected by panning
+  const totalDy = touch.clientY - ty0;
 
-  // Don't toggle immersive if tap was on the nav bar
   const nav = document.getElementById('reader-nav');
   const nr  = nav.getBoundingClientRect();
   const inNav = touch.clientX >= nr.left && touch.clientX <= nr.right &&
@@ -807,57 +812,57 @@ rc.addEventListener('touchend', e => {
   if (!dragging) { if (!inNav) toggleImmersive(); return; }
   dragging = false;
 
-  // Vertical drag — pan already committed incrementally, nothing to do
-  if (axis === 'y') { axis = null; return; }
-  // Zoomed + horizontal — pan already committed, nothing to do
-  if (zoomLevel > 1) { axis = null; return; }
-
-  axis = null;
+  // Zoomed + lock off = we were panning, no page flip
+  if (!scrollLockOn && zoomLevel > 1) return;
+  // Lock on + vertical pan only = check totalDy for flip
+  // (pan was incremental so slots haven't moved, just the canvas)
 
   const canNext = currentPage < totalPages;
   const canPrev = currentPage > 1;
   const T = 'transform 0.28s cubic-bezier(0.4,0,0.2,1)';
-  const S = 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)';
+  const SP = 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)';
 
-  if (dx < -SWIPE_MIN && canNext) {
-    // Swipe left → next page
+  if (totalDy < -SWIPE_MIN && canNext) {
+    // Swipe up → next page
+    if (scrollLockOn) { panOffsetX=0; panOffsetY=0; applyTransform(); }
     navLocked = true;
-    slot('cur') .style.cssText = `transition:${T};transform:translateX(-100%)`;
-    slot('next').style.cssText = `transition:${T};transform:translateX(0)`;
-    slot('prev').style.cssText = `transition:none;transform:translateX(-200%)`;
+    slot('cur') .style.cssText = `transition:${T};transform:translateY(-100%)`;
+    slot('next').style.cssText = `transition:${T};transform:translateY(0)`;
+    slot('prev').style.cssText = `transition:none;transform:translateY(-200%)`;
     setTimeout(() => {
       navLocked = false;
       if (!scrollLockOn) resetTransform(); else { panOffsetX=0; panOffsetY=0; applyTransform(); }
       advanceSlots(+1);
-    }, 300);
+    }, 280);
 
-  } else if (dx > SWIPE_MIN && canPrev) {
-    // Swipe right → prev page
+  } else if (totalDy > SWIPE_MIN && canPrev) {
+    // Swipe down → prev page
+    if (scrollLockOn) { panOffsetX=0; panOffsetY=0; applyTransform(); }
     navLocked = true;
-    slot('cur') .style.cssText = `transition:${T};transform:translateX(100%)`;
-    slot('prev').style.cssText = `transition:${T};transform:translateX(0)`;
-    slot('next').style.cssText = `transition:none;transform:translateX(200%)`;
+    slot('cur') .style.cssText = `transition:${T};transform:translateY(100%)`;
+    slot('prev').style.cssText = `transition:${T};transform:translateY(0)`;
+    slot('next').style.cssText = `transition:none;transform:translateY(200%)`;
     setTimeout(() => {
       navLocked = false;
       if (!scrollLockOn) resetTransform(); else { panOffsetX=0; panOffsetY=0; applyTransform(); }
       advanceSlots(-1);
-    }, 300);
+    }, 280);
 
-  } else {
-    // Didn't swipe far enough — spring back
-    slot('cur') .style.cssText = `transition:${S};transform:translateX(0)`;
-    slot('next').style.cssText = `transition:${S};transform:translateX(100%)`;
-    slot('prev').style.cssText = `transition:${S};transform:translateX(-100%)`;
+  } else if (!scrollLockOn) {
+    // Didn't swipe far enough — spring back (only in normal mode; lock mode slots never moved)
+    slot('cur') .style.cssText = `transition:${SP};transform:translateY(0)`;
+    slot('next').style.cssText = `transition:${SP};transform:translateY(100%)`;
+    slot('prev').style.cssText = `transition:${SP};transform:translateY(-100%)`;
   }
 }, {passive:true});
 
 rc.addEventListener('touchcancel', () => {
   if (navLocked) return;
-  pinching = false; dragging = false; axis = null;
-  const S = 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)';
-  slot('cur') .style.cssText = `transition:${S};transform:translateX(0)`;
-  slot('next').style.cssText = `transition:${S};transform:translateX(100%)`;
-  slot('prev').style.cssText = `transition:${S};transform:translateX(-100%)`;
+  pinching = false; dragging = false;
+  const SP = 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)';
+  slot('cur') .style.cssText = `transition:${SP};transform:translateY(0)`;
+  slot('next').style.cssText = `transition:${SP};transform:translateY(100%)`;
+  slot('prev').style.cssText = `transition:${SP};transform:translateY(-100%)`;
 }, {passive:true});
 
 // ─── IMMERSIVE ────────────────────────────────────────────────────
