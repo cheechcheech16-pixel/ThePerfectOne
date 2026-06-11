@@ -712,6 +712,7 @@ function resetTransform() {
 
 // ── single-touch tracking ─────────────────────────────────────────
 let ty0=0, tx0=0, dragging=false;
+let tyLast=0; // previous frame Y — used for incremental pan in lock mode
 
 // ── pinch tracking ────────────────────────────────────────────────
 let pinching       = false;
@@ -744,6 +745,7 @@ rc.addEventListener('touchstart', e => {
   pinching = false;
   ty0 = e.touches[0].clientY;
   tx0 = e.touches[0].clientX;
+  tyLast = ty0;
   dragging = false;
 }, {passive:false});
 
@@ -777,8 +779,12 @@ rc.addEventListener('touchmove', e => {
   dragging = true;
 
   if (scrollLockOn) {
-    // Pan the canvas; page-flip decision happens on touchend
-    panOffsetY += dy; ty0 = e.touches[0].clientY;
+    // Pan incrementally (delta from last frame) so finger tracks smoothly.
+    // ty0 is NOT updated — touchend uses (touch.clientY - ty0) for the full
+    // swipe distance to decide whether to flip the page.
+    const delta = e.touches[0].clientY - tyLast;
+    tyLast = e.touches[0].clientY;
+    panOffsetY += delta;
     clampPan();
     applyTransform();
     return;
@@ -832,7 +838,7 @@ rc.addEventListener('touchend', e => {
   if (scrollLockOn) {
     // Big swipe = page flip (pan is already committed incrementally above)
     if (dy < -SWIPE_MIN && canNext) {
-      panOffsetX = 0; panOffsetY = 0; applyTransform();
+      panOffsetX = 0; panOffsetY = 0; applyTransform(); // clear pan on cur before it flies out
       navLocked = true;
       slot('cur') .style.cssText = `transition:${TRANSITION};transform:translateY(-100%)`;
       slot('next').style.cssText = `transition:${TRANSITION};transform:translateY(0)`;
@@ -840,12 +846,14 @@ rc.addEventListener('touchend', e => {
       setTimeout(() => { navLocked = false; advanceSlots(+1); }, 300);
 
     } else if (dy > SWIPE_MIN && canPrev) {
-      panOffsetX = 0; panOffsetY = 0; applyTransform();
+      panOffsetX = 0; panOffsetY = 0; applyTransform(); // clear pan on cur before it flies out
       navLocked = true;
       slot('cur') .style.cssText = `transition:${TRANSITION};transform:translateY(100%)`;
       slot('prev').style.cssText = `transition:${TRANSITION};transform:translateY(0)`;
       slot('next').style.cssText = `transition:none;transform:translateY(200%)`;
       setTimeout(() => { navLocked = false; advanceSlots(-1); }, 300);
+    } else {
+      // Didn't swipe far enough — pan stays committed, nothing to spring back
     }
     // (if not a big swipe, pan is already applied — nothing to spring back)
 
