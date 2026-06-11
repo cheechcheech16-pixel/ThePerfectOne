@@ -16,6 +16,7 @@
 --ink:#0f0e11;--ink2:#1a1820;--ink3:#26232e;--border:#332f3d;
 --amber:#c8903a;--amber-dim:#8a5f20;--amber-glow:#fbbf60;
 --text:#e8e0d0;--text-dim:#9e96a8;--blood2:#c0392b;
+--page-bg:#000;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden}
@@ -77,8 +78,8 @@ html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-fa
 #reader-topbar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--ink2);border-bottom:1px solid var(--border);flex-shrink:0;min-height:52px;transition:transform .28s ease,opacity .28s ease;position:relative;z-index:30}
 #reader-title{flex:1;font-size:.82rem;font-family:'Playfair Display',serif;font-style:italic;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #reader-page-info{font-size:.72rem;color:var(--text-dim);white-space:nowrap;flex-shrink:0}
-#reader-content{flex:1;position:relative;overflow:hidden;background:#000}
-.page-slot{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:#000;transition:transform .32s cubic-bezier(.4,0,.2,1);will-change:transform}
+#reader-content{flex:1;position:relative;overflow:hidden;background:var(--page-bg)}
+.page-slot{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:var(--page-bg);transition:transform .32s cubic-bezier(.4,0,.2,1);will-change:transform}
 .page-slot canvas{display:block;max-width:100%;max-height:100%}
 .tint-sepia {filter:sepia(.7) brightness(.95)}
 .tint-warm  {filter:sepia(.3) saturate(1.2) brightness(1.02)}
@@ -381,6 +382,7 @@ function loadSeriesMosaics() {
 function enterSeries(id) {
   currentSeries = SERIES[id];
   currentTint = localStorage.getItem(currentSeries.tintKey) || 'normal';
+  setPageBg(currentTint);
   loadState();
   sortAlpha = false;
 
@@ -622,12 +624,11 @@ function advanceSlots(direction) {
     currentPage--;
   }
   // Snap all slots to their new logical positions instantly (no flash)
-  placeSlots();
-  // Lock ON: keep zoom level, just reset pan to top of new page
-  // Lock OFF: full reset
+  // Apply zoom to the new cur canvas BEFORE placeSlots so it never shows at wrong zoom
   if (scrollLockOn) { panOffsetX = 0; panOffsetY = 0; }
   else              { panOffsetX = 0; panOffsetY = 0; zoomLevel = 1; }
-  applyTransform();
+  applyTransform(); // stamps zoom onto new cur canvas first
+  placeSlots();     // then snap slot positions
   updateUI(); saveProgress();
   // Render the newly-far slot in the background
   if (direction === 1) renderIntoSlot(S.next, currentPage + 1);
@@ -926,10 +927,29 @@ document.getElementById('back-btn').addEventListener('click', () => {
 });
 
 // ─── TINT ─────────────────────────────────────────────────────────
+// Background colours that match each tint so the area around the canvas
+// (including the gap left by the sliding topbar in immersive mode) always
+// looks like the page, not a random grey or black.
+const TINT_BG = {
+  normal: '#0a0a0a',   // near-black — PDF white looks white on this
+  sepia:  '#2b1f0e',   // dark warm brown
+  warm:   '#1f1a0f',   // dark warm
+  night:  '#d4d4d4',   // night inverts, so bg should be light
+  cool:   '#0a0e14',   // dark cool blue
+  hicon:  '#000000',   // high contrast — pure black
+  green:  '#0a150a',   // dark green
+};
+
+function setPageBg(tintId) {
+  const bg = TINT_BG[tintId] || '#000';
+  document.documentElement.style.setProperty('--page-bg', bg);
+}
+
 function tintClass() { return (TINTS.find(t => t.id === currentTint) || TINTS[0]).cls; }
 function applyTintAll() {
   const cls = tintClass();
   document.querySelectorAll('.page-slot canvas').forEach(c => { c.className = cls; });
+  setPageBg(currentTint);
 }
 function buildTintPicker() {
   const grid = document.getElementById('tint-grid');
