@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#c8903a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Zom-B">
-<title>Zom-B Series</title>
+<meta name="apple-mobile-web-app-title" content="Darren Shan">
+<title>Darren Shan</title>
 <link rel="manifest" href="manifest.json">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Inter:wght@300;400;500&display=swap');
@@ -19,6 +19,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden}
 #app{display:flex;flex-direction:column;height:100dvh}
+
 /* TOPBAR */
 #topbar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--ink2);border-bottom:1px solid var(--border);flex-shrink:0}
 #topbar-logo{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--blood2);letter-spacing:.04em;flex:1;text-shadow:0 0 20px rgba(192,57,43,.4)}
@@ -26,9 +27,27 @@ html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-fa
 .icon-btn{background:none;border:none;color:var(--text-dim);cursor:pointer;padding:8px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .icon-btn:active{color:var(--amber);background:var(--ink3)}
 .icon-btn svg{width:20px;height:20px}
+
 /* VIEWS */
 .view{flex:1;overflow:hidden;display:none;flex-direction:column}
 .view.active{display:flex}
+
+/* ── SERIES HOME ──────────────────────────────────────────────── */
+#series-scroll{flex:1;overflow-y:auto;padding:24px 16px 80px}
+#series-scroll::-webkit-scrollbar{width:3px}
+#series-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.series-label{font-size:.62rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);margin:0 0 16px 2px}
+.series-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:600px;margin:0 auto}
+.series-card{position:relative;border-radius:8px;overflow:hidden;cursor:pointer;aspect-ratio:3/4;display:flex;flex-direction:column;justify-content:flex-end;-webkit-tap-highlight-color:transparent;transition:transform .15s}
+.series-card:active{transform:scale(.96)}
+.series-bg{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;background:var(--ink3)}
+.series-bg-img{width:100%;height:100%;object-fit:cover;display:block}
+.series-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,8,14,.97) 0%,rgba(10,8,14,.5) 50%,transparent 100%)}
+.series-info{position:relative;z-index:2;padding:14px 12px 16px}
+.series-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.8);line-height:1.2}
+.series-sub{font-size:.65rem;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;margin-top:4px}
+.series-count{display:inline-block;margin-top:8px;font-size:.62rem;font-weight:500;letter-spacing:.08em;padding:3px 8px;border-radius:20px;background:rgba(200,144,58,.2);color:var(--amber);border:1px solid rgba(200,144,58,.3)}
+
 /* LIBRARY */
 #library-scroll{flex:1;overflow-y:auto;padding:16px 14px 80px}
 #library-scroll::-webkit-scrollbar{width:3px}
@@ -52,89 +71,52 @@ html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-fa
 .book-meta-name{font-size:.7rem;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .book-progress-bar{height:2px;background:var(--border);border-radius:1px;margin-top:5px;overflow:hidden}
 .book-progress-fill{height:100%;background:var(--blood2);border-radius:1px;transition:width .4s}
+
 /* READER */
-#reader-topbar{
-display:flex;align-items:center;gap:8px;padding:10px 12px;
-background:var(--ink2);border-bottom:1px solid var(--border);
-flex-shrink:0;min-height:52px;
-transition:transform .28s ease,opacity .28s ease;
-position:relative;z-index:30;
-}
+#reader-topbar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--ink2);border-bottom:1px solid var(--border);flex-shrink:0;min-height:52px;transition:transform .28s ease,opacity .28s ease;position:relative;z-index:30}
 #reader-title{flex:1;font-size:.82rem;font-family:'Playfair Display',serif;font-style:italic;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #reader-page-info{font-size:.72rem;color:var(--text-dim);white-space:nowrap;flex-shrink:0}
 #reader-content{flex:1;position:relative;overflow:hidden;background:#000}
-/* PAGE SLOTS */
-.page-slot{
-position:absolute;
-top:0;left:0;right:0;bottom:0;
-display:flex;align-items:center;justify-content:center;
-background:#000;
-transition:transform .32s cubic-bezier(.4,0,.2,1);
-will-change:transform;
-}
-.page-slot canvas{
-display:block;
-max-width:100%;
-max-height:100%;
-}
-/* Page-colour filter classes */
+.page-slot{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:#000;transition:transform .32s cubic-bezier(.4,0,.2,1);will-change:transform}
+.page-slot canvas{display:block;max-width:100%;max-height:100%}
 .tint-sepia {filter:sepia(.7) brightness(.95)}
 .tint-warm  {filter:sepia(.3) saturate(1.2) brightness(1.02)}
 .tint-night {filter:invert(1) hue-rotate(180deg) brightness(.85)}
 .tint-cool  {filter:hue-rotate(20deg) brightness(.9) saturate(.8)}
 .tint-hicon {filter:contrast(1.3) brightness(1.05)}
 .tint-green {filter:sepia(.4) hue-rotate(90deg) brightness(.9)}
-/* NAV overlay */
-#reader-nav{
-position:absolute;bottom:0;left:0;right:0;
-background:linear-gradient(transparent,rgba(0,0,0,.92) 45%);
-padding:24px 14px 14px;
-display:flex;align-items:center;gap:8px;
-z-index:20;
-transition:transform .28s ease,opacity .28s ease;
-}
+#reader-nav{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.92) 45%);padding:24px 14px 14px;display:flex;align-items:center;gap:8px;z-index:20;transition:transform .28s ease,opacity .28s ease}
 .nav-btn{background:rgba(38,35,46,.92);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:8px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;gap:5px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .nav-btn:active{background:var(--border)}
 .nav-btn:disabled{opacity:.3;pointer-events:none}
 #reader-progress-wrap{flex:1;padding:0 2px}
 #reader-progress{width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:rgba(255,255,255,.2);cursor:pointer;outline:none}
 #reader-progress::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--amber);cursor:pointer;box-shadow:0 0 8px rgba(200,144,58,.5)}
-/* IMMERSIVE */
 #view-reader.immersive #reader-topbar{transform:translateY(-100%);opacity:0;pointer-events:none}
-#view-reader.immersive #reader-nav {transform:translateY(100%);opacity:0;pointer-events:none}
+#view-reader.immersive #reader-nav{transform:translateY(100%);opacity:0;pointer-events:none}
+
 /* TINT PICKER */
-#tint-panel{
-position:fixed;bottom:0;left:0;right:0;
-background:var(--ink2);border-top:1px solid var(--border);
-border-radius:16px 16px 0 0;
-padding:18px 16px 34px;
-z-index:500;
-transform:translateY(100%);
-transition:transform .28s ease;
-}
+#tint-panel{position:fixed;bottom:0;left:0;right:0;background:var(--ink2);border-top:1px solid var(--border);border-radius:16px 16px 0 0;padding:18px 16px 34px;z-index:500;transform:translateY(100%);transition:transform .28s ease}
 #tint-panel.open{transform:translateY(0)}
 #tint-panel h3{font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px}
 .tint-grid{display:flex;flex-wrap:wrap;gap:10px}
-.tint-btn{
-display:flex;align-items:center;gap:8px;
-background:var(--ink3);border:1.5px solid var(--border);
-color:var(--text);font-size:.8rem;font-family:'Inter',sans-serif;
-padding:9px 14px;border-radius:10px;cursor:pointer;
--webkit-tap-highlight-color:transparent;
-}
+.tint-btn{display:flex;align-items:center;gap:8px;background:var(--ink3);border:1.5px solid var(--border);color:var(--text);font-size:.8rem;font-family:'Inter',sans-serif;padding:9px 14px;border-radius:10px;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .tint-btn.active{border-color:var(--amber);color:var(--amber-glow);background:rgba(200,144,58,.1)}
 .tint-swatch{width:16px;height:16px;border-radius:50%;border:1px solid rgba(255,255,255,.2);flex-shrink:0}
 #tint-overlay{position:fixed;inset:0;z-index:499;display:none;background:rgba(0,0,0,.5)}
 #tint-overlay.open{display:block}
+
 /* LOADING */
 #loading{position:absolute;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:50}
 #loading.hidden{display:none}
 .spinner{width:38px;height:38px;border:3px solid #333;border-top-color:var(--blood2);border-radius:50%;animation:spin .75s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #loading-label{color:var(--text-dim);font-size:.82rem;text-align:center;max-width:260px}
+
 /* TOAST */
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--ink3);border:1px solid var(--amber-dim);color:var(--text);padding:9px 16px;border-radius:8px;font-size:.78rem;white-space:nowrap;opacity:0;transition:opacity .18s,transform .18s;pointer-events:none;z-index:600}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
 /* CTX MENU */
 #ctx-menu{position:fixed;background:var(--ink3);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.6);z-index:300;min-width:170px;display:none}
 .ctx-item{padding:13px 16px;cursor:pointer;font-size:.84rem;color:var(--text);display:flex;align-items:center;gap:10px;transition:background .1s}
@@ -145,20 +127,33 @@ padding:9px 14px;border-radius:10px;cursor:pointer;
 </head>
 <body>
 <div id="app">
+
   <div id="topbar">
-    <div id="topbar-logo">ZOM-B <span>Darren Shan · Complete Series</span></div>
-    <button class="icon-btn" id="sort-btn" aria-label="Sort">
+    <div id="topbar-logo"><span id="topbar-title">DARREN SHAN</span> <span id="topbar-sub">Select a Series</span></div>
+    <button class="icon-btn" id="sort-btn" aria-label="Sort" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
     </button>
   </div>
-  <div class="view active" id="view-library">
+
+  <!-- ── SERIES HOME ── -->
+  <div class="view active" id="view-series">
+    <div id="series-scroll">
+      <p class="series-label">Choose a Series</p>
+      <div class="series-grid" id="series-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── LIBRARY ── -->
+  <div class="view" id="view-library">
     <div id="library-scroll">
       <div id="library-inner">
-        <p class="section-label">Complete Series</p>
+        <p class="section-label" id="library-label">Complete Series</p>
         <div id="book-grid"></div>
       </div>
     </div>
   </div>
+
+  <!-- ── READER ── -->
   <div class="view" id="view-reader">
     <div id="reader-topbar">
       <button class="icon-btn" id="back-btn" aria-label="Back">
@@ -180,7 +175,6 @@ padding:9px 14px;border-radius:10px;cursor:pointer;
         <div class="spinner"></div>
         <p id="loading-label">Loading…</p>
       </div>
-      <!-- page slots injected here by JS -->
       <div id="reader-nav">
         <button class="nav-btn" id="prev-btn">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Prev
@@ -194,6 +188,7 @@ padding:9px 14px;border-radius:10px;cursor:pointer;
       </div>
     </div>
   </div>
+
 </div><!-- #app -->
 
 <div id="toast"></div>
@@ -220,30 +215,69 @@ padding:9px 14px;border-radius:10px;cursor:pointer;
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// ─── CATALOGUE ────────────────────────────────────────────────────
-const CATALOGUE = [
-  {id:'01',num:'1', title:'Zom-B',            isbn:'9780857077523'},
-  {id:'02',num:'2', title:'Zom-B Underground', isbn:'9780857077592'},
-  {id:'03',num:'3', title:'Zom-B City',        isbn:'9780857077608'},
-  {id:'04',num:'4', title:'Zom-B Angels',      isbn:'9780857077615'},
-  {id:'05',num:'5', title:'Zom-B Baby',        isbn:'9780857077622'},
-  {id:'06',num:'6', title:'Zom-B Gladiator',   isbn:'9780857077639'},
-  {id:'07',num:'7', title:'Zom-B Circus',      isbn:'9781471137983', novella:true},
-  {id:'08',num:'8', title:'Zom-B Mission',     isbn:'9780857077646'},
-  {id:'09',num:'9', title:'Zom-B Clans',       isbn:'9780857077653'},
-  {id:'10',num:'10',title:'Zom-B Family',      isbn:'9780857077660'},
-  {id:'11',num:'11',title:'Zom-B Bride',       isbn:'9780857077677'},
-  {id:'12',num:'12',title:'Zom-B Fugitive',    isbn:'9780857077684'},
-  {id:'13',num:'13',title:'Zom-B Goddess',     isbn:'9780857077691'},
-];
-
-const SPINE_COLS = [
-  ['#1a0a0a','#6b1a1a'],['#1a0d08','#7a3010'],['#0d1a0d','#2d6b2d'],
-  ['#0a0d1a','#1a3a6b'],['#1a1208','#7a5f10'],['#1a0810','#6b1040'],
-  ['#0d1a18','#1a6b5a'],['#1a0a15','#5a1060'],['#0f1a0a','#3a6b1a'],
-  ['#1a0f0a','#8b3a10'],['#0a0a1a','#2a2a8b'],['#1a0808','#8b2020'],
-  ['#100a1a','#6020a0'],
-];
+// ─── SERIES DEFINITIONS ───────────────────────────────────────────
+const SERIES = {
+  zomb: {
+    id: 'zomb',
+    name: 'Zom-B',
+    sub: 'Darren Shan',
+    bookFolder: 'books',
+    coversVar: 'BOOK_COVERS',
+    coversFile: 'books/covers.js',
+    storeKey: 'zomb_data_v2',
+    tintKey: 'zomb_tint',
+    catalogue: [
+      {id:'01',num:'1', title:'Zom-B',            isbn:'9780857077523'},
+      {id:'02',num:'2', title:'Zom-B Underground', isbn:'9780857077592'},
+      {id:'03',num:'3', title:'Zom-B City',        isbn:'9780857077608'},
+      {id:'04',num:'4', title:'Zom-B Angels',      isbn:'9780857077615'},
+      {id:'05',num:'5', title:'Zom-B Baby',        isbn:'9780857077622'},
+      {id:'06',num:'6', title:'Zom-B Gladiator',   isbn:'9780857077639'},
+      {id:'07',num:'7', title:'Zom-B Circus',      isbn:'9781471137983', novella:true},
+      {id:'08',num:'8', title:'Zom-B Mission',     isbn:'9780857077646'},
+      {id:'09',num:'9', title:'Zom-B Clans',       isbn:'9780857077653'},
+      {id:'10',num:'10',title:'Zom-B Family',      isbn:'9780857077660'},
+      {id:'11',num:'11',title:'Zom-B Bride',       isbn:'9780857077677'},
+      {id:'12',num:'12',title:'Zom-B Fugitive',    isbn:'9780857077684'},
+      {id:'13',num:'13',title:'Zom-B Goddess',     isbn:'9780857077691'},
+    ],
+    spineColors: [
+      ['#1a0a0a','#6b1a1a'],['#1a0d08','#7a3010'],['#0d1a0d','#2d6b2d'],
+      ['#0a0d1a','#1a3a6b'],['#1a1208','#7a5f10'],['#1a0810','#6b1040'],
+      ['#0d1a18','#1a6b5a'],['#1a0a15','#5a1060'],['#0f1a0a','#3a6b1a'],
+      ['#1a0f0a','#8b3a10'],['#0a0a1a','#2a2a8b'],['#1a0808','#8b2020'],
+      ['#100a1a','#6020a0'],
+    ],
+  },
+  demonata: {
+    id: 'demonata',
+    name: 'The Demonata',
+    sub: 'Darren Shan',
+    bookFolder: 'demonata',
+    coversVar: 'DEMONATA_COVERS',
+    coversFile: 'demonata/covers.js',
+    storeKey: 'demonata_data_v1',
+    tintKey: 'demonata_tint',
+    catalogue: [
+      {id:'01',num:'1', title:"Lord Loss"},
+      {id:'02',num:'2', title:'Demon Thief'},
+      {id:'03',num:'3', title:'Slawter'},
+      {id:'04',num:'4', title:'Bec'},
+      {id:'05',num:'5', title:'Blood Beast'},
+      {id:'06',num:'6', title:'Demon Apocalypse'},
+      {id:'07',num:'7', title:"Death's Shadow"},
+      {id:'08',num:'8', title:'Wolf Island'},
+      {id:'09',num:'9', title:'Dark Calling'},
+      {id:'10',num:'10',title:"Hell's Heroes"},
+    ],
+    spineColors: [
+      ['#1a0808','#6b0a0a'],['#0d0a1a','#3a1a6b'],['#1a0a0d','#6b1a40'],
+      ['#0a1a0d','#1a6b2d'],['#1a1008','#7a4010'],['#0a0d1a','#102060'],
+      ['#1a0808','#8b1a1a'],['#100a1a','#501080'],['#081a12','#0a6b3a'],
+      ['#1a0808','#7a0a0a'],
+    ],
+  },
+};
 
 // ─── TINTS ────────────────────────────────────────────────────────
 const TINTS = [
@@ -255,85 +289,128 @@ const TINTS = [
   {id:'hicon',  label:'High Contrast', swatch:'#ffffff', cls:'tint-hicon'},
   {id:'green',  label:'Green',         swatch:'#2d6b2d', cls:'tint-green'},
 ];
-let currentTint = localStorage.getItem('zomb_tint') || 'normal';
 
-function buildTintPicker() {
-  const grid = document.getElementById('tint-grid');
-  TINTS.forEach(t => {
-    const btn = document.createElement('button');
-    btn.className = 'tint-btn' + (t.id === currentTint ? ' active' : '');
-    btn.dataset.id = t.id;
-    btn.innerHTML = `<span class="tint-swatch" style="background:${t.swatch}"></span>${t.label}`;
-    btn.addEventListener('click', () => {
-      currentTint = t.id;
-      localStorage.setItem('zomb_tint', t.id);
-      document.querySelectorAll('.tint-btn').forEach(b => b.classList.toggle('active', b.dataset.id === t.id));
-      applyTintAll();
-      closeTintPanel();
-    });
-    grid.appendChild(btn);
+// ─── STATE ────────────────────────────────────────────────────────
+let currentSeries = null;
+let currentTint = 'normal';
+let state = {bookmarks:{}, progress:{}, totals:{}};
+let currentBook = null, pdfDoc = null, currentPage = 1, totalPages = 1;
+let sortAlpha = false, ctxId = null;
+const pdfCache = {};
+
+function loadState() {
+  if (!currentSeries) return;
+  try {
+    const s = localStorage.getItem(currentSeries.storeKey);
+    if (s) state = {bookmarks:{}, progress:{}, totals:{}, ...JSON.parse(s)};
+    else state = {bookmarks:{}, progress:{}, totals:{}};
+  } catch(e) { state = {bookmarks:{}, progress:{}, totals:{}}; }
+}
+function saveState() {
+  if (!currentSeries) return;
+  try { localStorage.setItem(currentSeries.storeKey, JSON.stringify(state)); } catch(e) {}
+}
+
+// ─── SERIES HOME ──────────────────────────────────────────────────
+function buildSeriesHome() {
+  const grid = document.getElementById('series-grid');
+  grid.innerHTML = '';
+  Object.values(SERIES).forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'series-card';
+    card.dataset.id = s.id;
+
+    // mosaic of first 4 cover placeholders — real covers injected after covers.js loads
+    const bg = document.createElement('div');
+    bg.className = 'series-bg';
+    bg.id = `series-bg-${s.id}`;
+    // 4 spine-coloured tiles as placeholder
+    for (let i = 0; i < 4; i++) {
+      const tile = document.createElement('div');
+      const [c1,c2] = s.spineColors[i];
+      tile.style.cssText = `background:linear-gradient(135deg,${c1},${c2});width:100%;height:100%`;
+      bg.appendChild(tile);
+    }
+
+    card.innerHTML = `
+      <div class="series-overlay"></div>
+      <div class="series-info">
+        <div class="series-name">${s.name}</div>
+        <div class="series-sub">${s.sub}</div>
+        <div class="series-count">${s.catalogue.length} Books</div>
+      </div>`;
+    card.insertBefore(bg, card.firstChild);
+    card.addEventListener('click', () => enterSeries(s.id));
+    grid.appendChild(card);
+  });
+
+  // lazy-load covers for mosaics
+  loadSeriesMosaics();
+}
+
+function loadSeriesMosaics() {
+  Object.values(SERIES).forEach(s => {
+    const script = document.createElement('script');
+    script.src = s.coversFile;
+    script.onload = () => {
+      const covers = window[s.coversVar];
+      if (!covers) return;
+      const bg = document.getElementById(`series-bg-${s.id}`);
+      if (!bg) return;
+      bg.innerHTML = '';
+      ['01','02','03','04'].forEach(id => {
+        const url = covers[id];
+        if (url) {
+          const img = document.createElement('img');
+          img.className = 'series-bg-img';
+          img.src = url;
+          bg.appendChild(img);
+        }
+      });
+    };
+    document.head.appendChild(script);
   });
 }
 
-function tintClass() {
-  return (TINTS.find(t => t.id === currentTint) || TINTS[0]).cls;
+function enterSeries(id) {
+  currentSeries = SERIES[id];
+  currentTint = localStorage.getItem(currentSeries.tintKey) || 'normal';
+  loadState();
+  sortAlpha = false;
+
+  document.getElementById('topbar-title').textContent = currentSeries.name.toUpperCase();
+  document.getElementById('topbar-sub').textContent = currentSeries.sub + ' · Complete Series';
+  document.getElementById('sort-btn').style.display = 'flex';
+  document.getElementById('library-label').textContent = 'Complete Series';
+
+  // update tint picker active state for this series
+  document.querySelectorAll('.tint-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.id === currentTint));
+
+  renderLibrary();
+  showView('view-library');
 }
 
-function applyTintAll() {
-  const cls = tintClass();
-  document.querySelectorAll('.page-slot canvas').forEach(c => { c.className = cls; });
-}
-
-document.getElementById('tint-btn').addEventListener('click', () => {
-  document.getElementById('tint-panel').classList.add('open');
-  document.getElementById('tint-overlay').classList.add('open');
-});
-document.getElementById('tint-overlay').addEventListener('click', closeTintPanel);
-function closeTintPanel() {
-  document.getElementById('tint-panel').classList.remove('open');
-  document.getElementById('tint-overlay').classList.remove('open');
-}
-
-// ─── STATE ────────────────────────────────────────────────────────
-const STORE_KEY = 'zomb_data_v2';
-let state = {bookmarks:{}, progress:{}, totals:{}};
-function loadState(){try{const s=localStorage.getItem(STORE_KEY);if(s)state={bookmarks:{},progress:{},totals:{},...JSON.parse(s)}}catch(e){}}
-function saveState(){try{localStorage.setItem(STORE_KEY,JSON.stringify(state))}catch(e){}}
-
-let currentBook=null, pdfDoc=null, currentPage=1, totalPages=1;
-let sortAlpha=false, ctxId=null;
-const pdfCache={};
-
-// ─── LOAD BOOK DATA ───────────────────────────────────────────────
-async function loadBookData(id) {
-  if(pdfCache[id]) return pdfCache[id];
-  const resp = await fetch(`books/${id}.js`);
-  if(!resp.ok) throw new Error(`Could not load books/${id}.js (${resp.status})`);
-  const text = await resp.text();
-  const match = text.match(/window\.BOOK_DATA\['\d+'\]='([A-Za-z0-9+/=]+)';/);
-  if(!match) throw new Error(`Could not parse book ${id}`);
-  const bin = atob(match[1]);
-  const bytes = new Uint8Array(bin.length);
-  for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
-  pdfCache[id]=bytes;
-  return bytes;
-}
-
-// ─── LIBRARY ─────────────────────────────────────────────────────
+// ─── LIBRARY ──────────────────────────────────────────────────────
 function renderLibrary() {
   const grid = document.getElementById('book-grid');
   grid.innerHTML = '';
-  const list = sortAlpha ? [...CATALOGUE].sort((a,b)=>a.title.localeCompare(b.title)) : CATALOGUE;
+  const catalogue = currentSeries.catalogue;
+  const list = sortAlpha ? [...catalogue].sort((a,b) => a.title.localeCompare(b.title)) : catalogue;
+
   list.forEach(book => {
-    const [c1,c2] = SPINE_COLS[parseInt(book.id)-1] || SPINE_COLS[0];
+    const [c1,c2] = currentSeries.spineColors[parseInt(book.id)-1] || currentSeries.spineColors[0];
     const hasBm = state.bookmarks[book.id] != null;
     const prog  = state.progress[book.id] || 0;
-    const total = state.totals[book.id]   || 0;
+    const total = state.totals[book.id] || 0;
     const pct   = total ? Math.min(100, Math.round(prog/total*100)) : 0;
-    const card  = document.createElement('div');
-    card.className  = 'book-card';
+
+    const covers = window[currentSeries.coversVar];
+    const coverUrl = (covers && covers[book.id]) || '';
+
+    const card = document.createElement('div');
+    card.className = 'book-card';
     card.dataset.id = book.id;
-    const coverUrl = (window.BOOK_COVERS && window.BOOK_COVERS[book.id]) || '';
     card.innerHTML = `
       <div class="book-cover" style="background:linear-gradient(155deg,${c1},${c2})">
         ${coverUrl ? `<img class="cover-img" src="${coverUrl}" alt="" loading="lazy">` : ''}
@@ -350,11 +427,13 @@ function renderLibrary() {
         <div class="book-meta-name">${book.title}</div>
         <div class="book-progress-bar"><div class="book-progress-fill" style="width:${pct}%"></div></div>
       </div>`;
+
     const img = card.querySelector('.cover-img');
-    if(img) {
+    if (img) {
       img.addEventListener('error', () => { img.style.display='none'; });
-      img.addEventListener('load',  () => { if(img.naturalWidth <= 1) img.style.display='none'; });
+      img.addEventListener('load',  () => { if(img.naturalWidth<=1) img.style.display='none'; });
     }
+
     card.addEventListener('click', () => openBook(book.id));
     let pt;
     card.addEventListener('touchstart', () => {
@@ -365,58 +444,90 @@ function renderLibrary() {
     card.addEventListener('contextmenu', e => { e.preventDefault(); showCtx(e, book.id); });
     grid.appendChild(card);
   });
+
+  // lazy inject covers if script already loaded
+  const covers = window[currentSeries.coversVar];
+  if (!covers) {
+    const s = document.createElement('script');
+    s.src = currentSeries.coversFile;
+    s.onload = () => renderLibrary();
+    document.head.appendChild(s);
+  }
 }
 
 document.getElementById('sort-btn').addEventListener('click', () => {
-  sortAlpha=!sortAlpha; toast(sortAlpha?'Sorted A–Z':'Series order'); renderLibrary();
+  sortAlpha = !sortAlpha;
+  toast(sortAlpha ? 'Sorted A–Z' : 'Series order');
+  renderLibrary();
 });
 
-// ─── CTX MENU ────────────────────────────────────────────────────
-function showCtx(e,id){
-  ctxId=id;
-  const hasBm=state.bookmarks[id]!=null;
-  document.getElementById('ctx-goto-bm').classList.toggle('muted',!hasBm);
-  document.getElementById('ctx-clear-bm').classList.toggle('muted',!hasBm);
-  const m=document.getElementById('ctx-menu'); m.style.display='block';
-  m.style.left=Math.min(e.clientX,innerWidth-m.offsetWidth-6)+'px';
-  m.style.top =Math.min(e.clientY,innerHeight-m.offsetHeight-6)+'px';
+// ─── CTX MENU ─────────────────────────────────────────────────────
+function showCtx(e, id) {
+  ctxId = id;
+  const hasBm = state.bookmarks[id] != null;
+  document.getElementById('ctx-goto-bm').classList.toggle('muted', !hasBm);
+  document.getElementById('ctx-clear-bm').classList.toggle('muted', !hasBm);
+  const m = document.getElementById('ctx-menu');
+  m.style.display = 'block';
+  m.style.left = Math.min(e.clientX, innerWidth  - m.offsetWidth  - 6) + 'px';
+  m.style.top  = Math.min(e.clientY, innerHeight - m.offsetHeight - 6) + 'px';
 }
-function hideCtx(){document.getElementById('ctx-menu').style.display='none'}
+function hideCtx() { document.getElementById('ctx-menu').style.display = 'none'; }
 document.addEventListener('click', e => { if(!document.getElementById('ctx-menu').contains(e.target)) hideCtx(); });
-document.getElementById('ctx-open').addEventListener('click',     ()=>{ hideCtx(); openBook(ctxId); });
-document.getElementById('ctx-goto-bm').addEventListener('click',  ()=>{ hideCtx(); const bm=state.bookmarks[ctxId]; if(bm!=null) openBook(ctxId,bm); });
-document.getElementById('ctx-clear-bm').addEventListener('click', ()=>{ hideCtx(); delete state.bookmarks[ctxId]; saveState(); renderLibrary(); toast('Bookmark cleared'); });
+document.getElementById('ctx-open').addEventListener('click',     () => { hideCtx(); openBook(ctxId); });
+document.getElementById('ctx-goto-bm').addEventListener('click',  () => { hideCtx(); const bm=state.bookmarks[ctxId]; if(bm!=null) openBook(ctxId,bm); });
+document.getElementById('ctx-clear-bm').addEventListener('click', () => { hideCtx(); delete state.bookmarks[ctxId]; saveState(); renderLibrary(); toast('Bookmark cleared'); });
 
-// ─── OPEN BOOK ───────────────────────────────────────────────────
+// ─── OPEN BOOK ────────────────────────────────────────────────────
 async function openBook(id, jumpTo) {
-  const book = CATALOGUE.find(b=>b.id===id);
-  if(!book) return;
-  currentBook=book;
+  const book = currentSeries.catalogue.find(b => b.id === id);
+  if (!book) return;
+  currentBook = book;
   showView('view-reader');
-  document.getElementById('reader-title').textContent=`${book.num}. ${book.title}`;
+  document.getElementById('reader-title').textContent = `${book.num}. ${book.title}`;
   showLoading(`Loading ${book.title}…`);
   try {
     const bytes = await loadBookData(id);
     showLoading('Rendering…');
     await loadPDF(book, bytes, jumpTo);
   } catch(err) {
-    hideLoading(); toast('Error: '+(err.message||'could not open')); return;
+    hideLoading(); toast('Error: ' + (err.message || 'could not open')); return;
   }
   hideLoading();
 }
 
-// ─── PDF + THREE-SLOT PAGE SYSTEM ────────────────────────────────
+// ─── LOAD BOOK DATA ───────────────────────────────────────────────
+async function loadBookData(id) {
+  const cacheKey = currentSeries.id + '_' + id;
+  if (pdfCache[cacheKey]) return pdfCache[cacheKey];
+
+  // initialise BOOK_DATA store for this series if needed
+  if (!window.BOOK_DATA) window.BOOK_DATA = {};
+
+  const resp = await fetch(`${currentSeries.bookFolder}/${id}.js`);
+  if (!resp.ok) throw new Error(`Could not load ${currentSeries.bookFolder}/${id}.js (${resp.status})`);
+  const text = await resp.text();
+  const match = text.match(/window\.BOOK_DATA\['\d+'\]='([A-Za-z0-9+/=]+)';/);
+  if (!match) throw new Error(`Could not parse book ${id}`);
+  const bin = atob(match[1]);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  pdfCache[cacheKey] = bytes;
+  return bytes;
+}
+
+// ─── PDF + THREE-SLOT PAGE SYSTEM ─────────────────────────────────
 async function loadPDF(book, bytes, jumpToPage) {
-  pdfDoc = await pdfjsLib.getDocument({data:bytes}).promise;
+  pdfDoc = await pdfjsLib.getDocument({data: bytes}).promise;
   totalPages = pdfDoc.numPages;
-  state.totals[book.id]=totalPages; saveState();
-  const start = jumpToPage!=null ? jumpToPage : (state.progress[book.id]||1);
+  state.totals[book.id] = totalPages; saveState();
+  const start = jumpToPage != null ? jumpToPage : (state.progress[book.id] || 1);
   await gotoPage(start, false);
 }
 
 const S = {};
 function slot(name) {
-  if(!S[name]) {
+  if (!S[name]) {
     const el = document.createElement('div');
     el.className = 'page-slot';
     const nav = document.getElementById('reader-nav');
@@ -436,22 +547,21 @@ function resetPositions(animated) {
 async function renderPage(name, pageNum) {
   const el = slot(name);
   el.innerHTML = '';
-  if(!pdfDoc || pageNum<1 || pageNum>totalPages) return;
+  if (!pdfDoc || pageNum < 1 || pageNum > totalPages) return;
   const page = await pdfDoc.getPage(pageNum);
-  const vp0  = page.getViewport({scale:1});
-  const rc   = document.getElementById('reader-content');
-  const W    = rc.clientWidth;
-  const H    = rc.clientHeight;
-  const dpr  = window.devicePixelRatio || 1;
+  const vp0 = page.getViewport({scale:1});
+  const rc = document.getElementById('reader-content');
+  const W = rc.clientWidth, H = rc.clientHeight;
+  const dpr = window.devicePixelRatio || 1;
   const scale = Math.min(W / vp0.width, H / vp0.height) * dpr;
-  const vp   = page.getViewport({scale});
+  const vp = page.getViewport({scale});
   const canvas = document.createElement('canvas');
   canvas.width  = Math.round(vp.width);
   canvas.height = Math.round(vp.height);
   canvas.style.width  = Math.round(vp.width  / dpr) + 'px';
   canvas.style.height = Math.round(vp.height / dpr) + 'px';
   canvas.className = tintClass();
-  await page.render({canvasContext:canvas.getContext('2d'), viewport:vp}).promise;
+  await page.render({canvasContext: canvas.getContext('2d'), viewport: vp}).promise;
   el.appendChild(canvas);
 }
 
@@ -462,203 +572,160 @@ async function gotoPage(n, animated=true) {
   resetPositions(animated);
   updateUI();
   saveProgress();
-  // Pre-render neighbours in the background (don't await)
   renderPage('next', n+1);
   renderPage('prev', n-1);
 }
 
-// ─── SWIPE GESTURE ───────────────────────────────────────────────
-// Fix: capture target page immediately at swipe-end (not inside setTimeout)
-// Fix: navLocked blocks any new touch input during the 350ms animation
-// Fix: tighter axis lock (2× ratio) and larger deadzone prevent accidental triggers
-
-let ty0=0, tx0=0, dragging=false, axis=null, navLocked=false;
-
-// How far finger must travel vertically to count as a page-turn swipe
-const SWIPE_MIN = 75;
-// Vertical movement must be this many times greater than horizontal to lock y-axis
-const AXIS_RATIO = 2.0;
-// Minimum movement before we decide which axis the gesture is on
-const DEADZONE = 10;
-
+// ─── SWIPE ────────────────────────────────────────────────────────
+let ty0=0, tx0=0, dragging=false, axis=null;
+const SWIPE_MIN = 50;
 const rc = document.getElementById('reader-content');
-
-rc.addEventListener('touchstart', e => {
-  // If a page-turn animation is already running, eat the touch entirely
-  if(navLocked) return;
-  ty0 = e.touches[0].clientY;
-  tx0 = e.touches[0].clientX;
-  dragging = false;
-  axis = null;
-}, {passive:true});
-
+rc.addEventListener('touchstart', e => { ty0=e.touches[0].clientY; tx0=e.touches[0].clientX; dragging=false; axis=null; }, {passive:true});
 rc.addEventListener('touchmove', e => {
-  // Block all moves while animating
-  if(navLocked) { e.preventDefault(); return; }
-
-  const dy = e.touches[0].clientY - ty0;
-  const dx = e.touches[0].clientX - tx0;
-
-  // Wait for finger to leave the deadzone before committing to an axis
-  if(!axis && (Math.abs(dy) > DEADZONE || Math.abs(dx) > DEADZONE)) {
-    axis = Math.abs(dy) > Math.abs(dx) * AXIS_RATIO ? 'y' : 'x';
-  }
-
-  // Not a vertical swipe — let the browser handle it (scrolling, etc.)
-  if(axis !== 'y') return;
-
+  const dy=e.touches[0].clientY-ty0, dx=e.touches[0].clientX-tx0;
+  if (!axis && (Math.abs(dy)>8||Math.abs(dx)>8)) axis = Math.abs(dy)>Math.abs(dx)*1.1 ? 'y' : 'x';
+  if (axis!=='y') return;
   e.preventDefault();
   dragging = true;
-
-  // Remove transition so the slot follows the finger exactly
-  ['cur','next','prev'].forEach(n => slot(n).style.transitionDuration = '0s');
+  ['cur','next','prev'].forEach(n => slot(n).style.transitionDuration='0s');
   slot('cur') .style.transform = `translateY(${dy}px)`;
   slot('next').style.transform = `translateY(calc(-100% + ${dy}px))`;
   slot('prev').style.transform = `translateY(calc(100% + ${dy}px))`;
 }, {passive:false});
-
 rc.addEventListener('touchend', e => {
-  // Ignore touches that fired while locked
-  if(navLocked) return;
-
   const dy = e.changedTouches[0].clientY - ty0;
-
-  // Pure tap (no drag movement detected) → toggle immersive mode
-  if(!dragging) {
-    toggleImmersive();
-    return;
-  }
-
+  if (!dragging) { toggleImmersive(); return; }
   dragging = false;
-
-  if(dy < -SWIPE_MIN && currentPage < totalPages) {
-    // ── SWIPE UP → next page ──────────────────────────────────────
-    // Capture the target RIGHT NOW, before the setTimeout fires.
-    // This is the critical fix — reading currentPage inside the timeout
-    // was causing double-skips because currentPage could change meanwhile.
-    const targetPage = currentPage + 1;
-    navLocked = true; // block any further touches until animation finishes
-
-    ['cur','next','prev'].forEach(n => slot(n).style.transitionDuration = '');
-    slot('cur') .style.transform = 'translateY(-100%)';
-    slot('next').style.transform = 'translateY(0)';
-    slot('prev').style.transform = 'translateY(-200%)';
-
-    setTimeout(() => {
-      navLocked = false;
-      gotoPage(targetPage, false);
-    }, 350);
-
-  } else if(dy > SWIPE_MIN && currentPage > 1) {
-    // ── SWIPE DOWN → prev page ────────────────────────────────────
-    const targetPage = currentPage - 1;
-    navLocked = true;
-
-    ['cur','next','prev'].forEach(n => slot(n).style.transitionDuration = '');
-    slot('cur') .style.transform = 'translateY(100%)';
-    slot('prev').style.transform = 'translateY(0)';
-    slot('next').style.transform = 'translateY(200%)';
-
-    setTimeout(() => {
-      navLocked = false;
-      gotoPage(targetPage, false);
-    }, 350);
-
+  if (dy < -SWIPE_MIN && currentPage < totalPages) {
+    ['cur','next','prev'].forEach(n => slot(n).style.transitionDuration='');
+    slot('cur') .style.transform='translateY(-100%)';
+    slot('next').style.transform='translateY(0)';
+    slot('prev').style.transform='translateY(-200%)';
+    setTimeout(() => gotoPage(currentPage+1, false), 330);
+  } else if (dy > SWIPE_MIN && currentPage > 1) {
+    ['cur','next','prev'].forEach(n => slot(n).style.transitionDuration='');
+    slot('cur') .style.transform='translateY(100%)';
+    slot('prev').style.transform='translateY(0)';
+    slot('next').style.transform='translateY(200%)';
+    setTimeout(() => gotoPage(currentPage-1, false), 330);
   } else {
-    // Didn't swipe far enough — snap back
     resetPositions(true);
   }
 }, {passive:true});
 
-// Also reset lock if a touch is cancelled (e.g. incoming call, notification)
-rc.addEventListener('touchcancel', () => {
-  navLocked = false;
-  dragging  = false;
-  axis      = null;
-  resetPositions(true);
-}, {passive:true});
-
-// ─── IMMERSIVE ───────────────────────────────────────────────────
-let immersive=false;
-function toggleImmersive(){
-  immersive=!immersive;
+// ─── IMMERSIVE ────────────────────────────────────────────────────
+let immersive = false;
+function toggleImmersive() {
+  immersive = !immersive;
   document.getElementById('view-reader').classList.toggle('immersive', immersive);
-  if(immersive) toast('Tap page to show controls');
+  if (immersive) toast('Tap page to show controls');
 }
 
-// ─── READER UI ───────────────────────────────────────────────────
-function updateUI(){
-  document.getElementById('reader-page-info').textContent=`${currentPage} / ${totalPages}`;
-  const p=document.getElementById('reader-progress'); p.max=totalPages; p.value=currentPage;
-  const bm=currentBook?state.bookmarks[currentBook.id]:null;
-  const filled=bm===currentPage;
-  const path=document.querySelector('#bm-icon path');
-  path.setAttribute('fill', filled?'var(--amber)':'none');
-  path.setAttribute('stroke', filled?'var(--amber)':'currentColor');
+// ─── READER UI ────────────────────────────────────────────────────
+function updateUI() {
+  document.getElementById('reader-page-info').textContent = `${currentPage} / ${totalPages}`;
+  const p = document.getElementById('reader-progress'); p.max = totalPages; p.value = currentPage;
+  const bm = currentBook ? state.bookmarks[currentBook.id] : null;
+  const filled = bm === currentPage;
+  const path = document.querySelector('#bm-icon path');
+  path.setAttribute('fill',   filled ? 'var(--amber)' : 'none');
+  path.setAttribute('stroke', filled ? 'var(--amber)' : 'currentColor');
 }
+function saveProgress() { if (!currentBook) return; state.progress[currentBook.id] = currentPage; saveState(); }
 
-function saveProgress(){if(!currentBook)return;state.progress[currentBook.id]=currentPage;saveState()}
+document.getElementById('prev-btn').addEventListener('click', () => { if(currentPage>1) gotoPage(currentPage-1); });
+document.getElementById('next-btn').addEventListener('click', () => { if(currentPage<totalPages) gotoPage(currentPage+1); });
+document.getElementById('reader-progress').addEventListener('change', e => gotoPage(parseInt(e.target.value)));
 
-document.getElementById('prev-btn').addEventListener('click', ()=>{ if(currentPage>1) gotoPage(currentPage-1); });
-document.getElementById('next-btn').addEventListener('click', ()=>{ if(currentPage<totalPages) gotoPage(currentPage+1); });
-document.getElementById('reader-progress').addEventListener('change', e=>gotoPage(parseInt(e.target.value)));
-
-document.getElementById('bookmark-btn').addEventListener('click', ()=>{
-  if(!currentBook) return;
-  const ex=state.bookmarks[currentBook.id];
-  if(ex===currentPage){delete state.bookmarks[currentBook.id];toast('Bookmark removed')}
-  else{state.bookmarks[currentBook.id]=currentPage;toast(`Page ${currentPage} bookmarked`)}
+document.getElementById('bookmark-btn').addEventListener('click', () => {
+  if (!currentBook) return;
+  const ex = state.bookmarks[currentBook.id];
+  if (ex === currentPage) { delete state.bookmarks[currentBook.id]; toast('Bookmark removed'); }
+  else { state.bookmarks[currentBook.id] = currentPage; toast(`Page ${currentPage} bookmarked`); }
   saveState(); updateUI();
 });
 
-document.getElementById('back-btn').addEventListener('click', ()=>{
+document.getElementById('back-btn').addEventListener('click', () => {
   saveProgress();
-  if(pdfDoc){try{pdfDoc.destroy()}catch(e){} pdfDoc=null;}
-  ['cur','prev','next'].forEach(n=>{if(S[n])S[n].innerHTML='';});
-  currentBook=null; immersive=false; navLocked=false;
+  if (pdfDoc) { try { pdfDoc.destroy(); } catch(e) {} pdfDoc = null; }
+  ['cur','prev','next'].forEach(n => { if(S[n]) S[n].innerHTML=''; });
+  currentBook = null; immersive = false;
   document.getElementById('view-reader').classList.remove('immersive');
-  showView('view-library'); renderLibrary();
+  showView('view-library');
+  renderLibrary();
 });
 
-// ─── HELPERS ─────────────────────────────────────────────────────
-function showView(id){
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.getElementById('topbar').style.display = (id==='view-reader') ? 'none' : 'flex';
+// ─── TINT ─────────────────────────────────────────────────────────
+function tintClass() { return (TINTS.find(t => t.id === currentTint) || TINTS[0]).cls; }
+function applyTintAll() {
+  const cls = tintClass();
+  document.querySelectorAll('.page-slot canvas').forEach(c => { c.className = cls; });
 }
-function showLoading(m){document.getElementById('loading-label').textContent=m;document.getElementById('loading').classList.remove('hidden')}
-function hideLoading(){document.getElementById('loading').classList.add('hidden')}
-let toastT; function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),3000)}
-
-window.addEventListener('popstate', ()=>{ if(document.getElementById('view-reader').classList.contains('active')) document.getElementById('back-btn').click(); });
-if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
-
-loadState();
-buildTintPicker();
-renderLibrary();
-
-// ─── LAZY COVER LOADING ───────────────────────────────────────────
-(function loadCoversLazy() {
-  const s = document.createElement('script');
-  s.src = 'books/covers.js';
-  s.onload = function() {
-    if (!window.BOOK_COVERS) return;
-    document.querySelectorAll('.book-card').forEach(card => {
-      const id  = card.dataset.id;
-      const url = window.BOOK_COVERS[id];
-      if (!url) return;
-      const cover = card.querySelector('.book-cover');
-      if (!cover) return;
-      if (card.querySelector('.cover-img')) return;
-      const img = document.createElement('img');
-      img.className = 'cover-img';
-      img.src = url;
-      img.alt = '';
-      cover.insertBefore(img, cover.firstChild);
+function buildTintPicker() {
+  const grid = document.getElementById('tint-grid');
+  TINTS.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'tint-btn' + (t.id === currentTint ? ' active' : '');
+    btn.dataset.id = t.id;
+    btn.innerHTML = `<span class="tint-swatch" style="background:${t.swatch}"></span>${t.label}`;
+    btn.addEventListener('click', () => {
+      currentTint = t.id;
+      if (currentSeries) localStorage.setItem(currentSeries.tintKey, t.id);
+      document.querySelectorAll('.tint-btn').forEach(b => b.classList.toggle('active', b.dataset.id === t.id));
+      applyTintAll();
+      closeTintPanel();
     });
-  };
-  document.head.appendChild(s);
-})();
+    grid.appendChild(btn);
+  });
+}
+document.getElementById('tint-btn').addEventListener('click', () => {
+  document.getElementById('tint-panel').classList.add('open');
+  document.getElementById('tint-overlay').classList.add('open');
+});
+document.getElementById('tint-overlay').addEventListener('click', closeTintPanel);
+function closeTintPanel() {
+  document.getElementById('tint-panel').classList.remove('open');
+  document.getElementById('tint-overlay').classList.remove('open');
+}
+
+// ─── VIEW HELPERS ─────────────────────────────────────────────────
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const inReader = id === 'view-reader';
+  const inSeries = id === 'view-series';
+  document.getElementById('topbar').style.display = inReader ? 'none' : 'flex';
+  document.getElementById('sort-btn').style.display = (inSeries || inReader) ? 'none' : 'flex';
+  if (inSeries) {
+    document.getElementById('topbar-title').textContent = 'DARREN SHAN';
+    document.getElementById('topbar-sub').textContent  = 'Select a Series';
+  }
+}
+function showLoading(m) { document.getElementById('loading-label').textContent=m; document.getElementById('loading').classList.remove('hidden'); }
+function hideLoading()  { document.getElementById('loading').classList.add('hidden'); }
+let toastT;
+function toast(m) { const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),3000); }
+
+// ─── BACK NAVIGATION ──────────────────────────────────────────────
+// In reader → back to library; in library → back to series home
+window.addEventListener('popstate', () => {
+  const readerActive = document.getElementById('view-reader').classList.contains('active');
+  const libraryActive = document.getElementById('view-library').classList.contains('active');
+  if (readerActive) document.getElementById('back-btn').click();
+  else if (libraryActive) { showView('view-series'); }
+});
+
+// Also make the topbar logo clickable to go back to series home from library
+document.getElementById('topbar-logo').addEventListener('click', () => {
+  if (document.getElementById('view-library').classList.contains('active')) {
+    showView('view-series');
+  }
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────
+buildTintPicker();
+buildSeriesHome();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
