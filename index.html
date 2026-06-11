@@ -587,7 +587,7 @@ async function renderIntoSlot(el, pageNum) {
   // Pre-fill with the page background colour so there's never a white flash
   // or white gap between pages during swipe animations
   const ctx2d = canvas.getContext('2d');
-  ctx2d.fillStyle = TINT_BG[currentTint] || '#000000';
+  ctx2d.fillStyle = TINT_BG[currentTint] || '#f5f5f0';
   ctx2d.fillRect(0, 0, canvas.width, canvas.height);
   await page.render({canvasContext: ctx2d, viewport: vp}).promise;
   el.appendChild(canvas);
@@ -938,13 +938,13 @@ document.getElementById('back-btn').addEventListener('click', () => {
 // (including the gap left by the sliding topbar in immersive mode) always
 // looks like the page, not a random grey or black.
 const TINT_BG = {
-  normal: '#000000',   // black borders, black bg
-  sepia:  '#1a0f00',   // dark sepia brown
-  warm:   '#1a1100',   // dark warm amber
-  night:  '#000000',   // night mode = dark, pure black
-  cool:   '#00080f',   // dark cool blue-black
-  hicon:  '#000000',   // high contrast black
-  green:  '#001400',   // dark green-black
+  normal: '#f5f5f0',   // PDF page white/cream, no filter
+  sepia:  '#c8a97a',   // white + sepia filter
+  warm:   '#f0e8d0',   // white + warm filter
+  night:  '#1a1a2e',   // inverted white = dark
+  cool:   '#c8d4dc',   // white + cool filter
+  hicon:  '#ffffff',   // high contrast white
+  green:  '#b8c8a0',   // white + green filter
 };
 
 function setPageBg(tintId) {
