@@ -577,13 +577,24 @@ async function gotoPage(n, animated=true) {
 }
 
 // ─── SWIPE ────────────────────────────────────────────────────────
-let ty0=0, tx0=0, dragging=false, axis=null;
-const SWIPE_MIN = 50;
+// Fix 1: navLocked blocks any new touch while the page-turn animation plays
+// Fix 2: targetPage captured immediately at swipe-end, not inside setTimeout
+//         (reading currentPage after 330ms caused double-skips)
+// Fix 3: tighter axis lock (2× ratio) + larger deadzone stops accidental triggers
+let ty0=0, tx0=0, dragging=false, axis=null, navLocked=false;
+const SWIPE_MIN  = 75;   // px finger must travel to trigger a turn
+const AXIS_RATIO = 2.0;  // vertical must be 2× horizontal to lock y-axis
+const DEADZONE   = 10;   // px before axis is decided
 const rc = document.getElementById('reader-content');
-rc.addEventListener('touchstart', e => { ty0=e.touches[0].clientY; tx0=e.touches[0].clientX; dragging=false; axis=null; }, {passive:true});
+rc.addEventListener('touchstart', e => {
+  if (navLocked) return;
+  ty0=e.touches[0].clientY; tx0=e.touches[0].clientX; dragging=false; axis=null;
+}, {passive:true});
 rc.addEventListener('touchmove', e => {
+  if (navLocked) { e.preventDefault(); return; }
   const dy=e.touches[0].clientY-ty0, dx=e.touches[0].clientX-tx0;
-  if (!axis && (Math.abs(dy)>8||Math.abs(dx)>8)) axis = Math.abs(dy)>Math.abs(dx)*1.1 ? 'y' : 'x';
+  if (!axis && (Math.abs(dy)>DEADZONE||Math.abs(dx)>DEADZONE))
+    axis = Math.abs(dy)>Math.abs(dx)*AXIS_RATIO ? 'y' : 'x';
   if (axis!=='y') return;
   e.preventDefault();
   dragging = true;
@@ -593,24 +604,32 @@ rc.addEventListener('touchmove', e => {
   slot('prev').style.transform = `translateY(calc(100% + ${dy}px))`;
 }, {passive:false});
 rc.addEventListener('touchend', e => {
+  if (navLocked) return;
   const dy = e.changedTouches[0].clientY - ty0;
   if (!dragging) { toggleImmersive(); return; }
   dragging = false;
   if (dy < -SWIPE_MIN && currentPage < totalPages) {
+    const targetPage = currentPage + 1;  // capture NOW before timeout
+    navLocked = true;
     ['cur','next','prev'].forEach(n => slot(n).style.transitionDuration='');
     slot('cur') .style.transform='translateY(-100%)';
     slot('next').style.transform='translateY(0)';
     slot('prev').style.transform='translateY(-200%)';
-    setTimeout(() => gotoPage(currentPage+1, false), 330);
+    setTimeout(() => { navLocked=false; gotoPage(targetPage, false); }, 350);
   } else if (dy > SWIPE_MIN && currentPage > 1) {
+    const targetPage = currentPage - 1;  // capture NOW before timeout
+    navLocked = true;
     ['cur','next','prev'].forEach(n => slot(n).style.transitionDuration='');
     slot('cur') .style.transform='translateY(100%)';
     slot('prev').style.transform='translateY(0)';
     slot('next').style.transform='translateY(200%)';
-    setTimeout(() => gotoPage(currentPage-1, false), 330);
+    setTimeout(() => { navLocked=false; gotoPage(targetPage, false); }, 350);
   } else {
     resetPositions(true);
   }
+}, {passive:true});
+rc.addEventListener('touchcancel', () => {
+  navLocked=false; dragging=false; axis=null; resetPositions(true);
 }, {passive:true});
 
 // ─── IMMERSIVE ────────────────────────────────────────────────────
