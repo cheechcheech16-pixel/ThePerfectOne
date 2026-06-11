@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <meta name="theme-color" content="#c8903a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -22,7 +22,7 @@ html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-fa
 
 /* TOPBAR */
 #topbar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--ink2);border-bottom:1px solid var(--border);flex-shrink:0}
-#topbar-logo{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--blood2);letter-spacing:.04em;flex:1;text-shadow:0 0 20px rgba(192,57,43,.4)}
+#topbar-logo{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--blood2);letter-spacing:.04em;flex:1;text-shadow:0 0 20px rgba(192,57,43,.4);cursor:pointer}
 #topbar-logo span{color:var(--amber);font-style:italic;font-size:.75rem;font-weight:400;display:block;letter-spacing:.1em;margin-top:-2px}
 .icon-btn{background:none;border:none;color:var(--text-dim);cursor:pointer;padding:8px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .icon-btn:active{color:var(--amber);background:var(--ink3)}
@@ -32,7 +32,7 @@ html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-fa
 .view{flex:1;overflow:hidden;display:none;flex-direction:column}
 .view.active{display:flex}
 
-/* ── SERIES HOME ──────────────────────────────────────────────── */
+/* SERIES HOME */
 #series-scroll{flex:1;overflow-y:auto;padding:24px 16px 80px}
 #series-scroll::-webkit-scrollbar{width:3px}
 #series-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
@@ -77,14 +77,14 @@ html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-fa
 #reader-title{flex:1;font-size:.82rem;font-family:'Playfair Display',serif;font-style:italic;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #reader-page-info{font-size:.72rem;color:var(--text-dim);white-space:nowrap;flex-shrink:0}
 #reader-content{flex:1;position:relative;overflow:hidden;background:#000}
-.page-slot{position:absolute;top:0;left:0;right:0;bottom:0;overflow:auto;background:#000;transition:transform .32s cubic-bezier(.4,0,.2,1);will-change:transform;-webkit-overflow-scrolling:touch}
-.page-slot canvas{display:block;margin:0 auto;touch-action:pinch-zoom;}
-.tint-sepia {filter:sepia(.7) brightness(.95)}
-.tint-warm  {filter:sepia(.3) saturate(1.2) brightness(1.02)}
-.tint-night {filter:invert(1) hue-rotate(180deg) brightness(.85)}
-.tint-cool  {filter:hue-rotate(20deg) brightness(.9) saturate(.8)}
-.tint-hicon {filter:contrast(1.3) brightness(1.05)}
-.tint-green {filter:sepia(.4) hue-rotate(90deg) brightness(.9)}
+.page-slot{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:#000;transition:transform .32s cubic-bezier(.4,0,.2,1);will-change:transform}
+.page-slot canvas{display:block;max-width:100%;max-height:100%;touch-action:pinch-zoom}
+.tint-sepia{filter:sepia(.7) brightness(.95)}
+.tint-warm{filter:sepia(.3) saturate(1.2) brightness(1.02)}
+.tint-night{filter:invert(1) hue-rotate(180deg) brightness(.85)}
+.tint-cool{filter:hue-rotate(20deg) brightness(.9) saturate(.8)}
+.tint-hicon{filter:contrast(1.3) brightness(1.05)}
+.tint-green{filter:sepia(.4) hue-rotate(90deg) brightness(.9)}
 #reader-nav{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.92) 45%);padding:24px 14px 14px;display:flex;align-items:center;gap:8px;z-index:20;transition:transform .28s ease,opacity .28s ease}
 .nav-btn{background:rgba(38,35,46,.92);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:8px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;gap:5px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .nav-btn:active{background:var(--border)}
@@ -129,13 +129,12 @@ html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-fa
 <div id="app">
 
   <div id="topbar">
-    <div id="topbar-logo"><span id="topbar-title">DARREN SHAN</span> <span id="topbar-sub">Select a Series</span></div>
+    <div id="topbar-logo"><span id="topbar-title">DARREN SHAN</span><span id="topbar-sub">Select a Series</span></div>
     <button class="icon-btn" id="sort-btn" aria-label="Sort" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
     </button>
   </div>
 
-  <!-- ── SERIES HOME ── -->
   <div class="view active" id="view-series">
     <div id="series-scroll">
       <p class="series-label">Choose a Series</p>
@@ -143,7 +142,6 @@ html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-fa
     </div>
   </div>
 
-  <!-- ── LIBRARY ── -->
   <div class="view" id="view-library">
     <div id="library-scroll">
       <div id="library-inner">
@@ -153,7 +151,6 @@ html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-fa
     </div>
   </div>
 
-  <!-- ── READER ── -->
   <div class="view" id="view-reader">
     <div id="reader-topbar">
       <button class="icon-btn" id="back-btn" aria-label="Back">
@@ -189,7 +186,7 @@ html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-fa
     </div>
   </div>
 
-</div><!-- #app -->
+</div>
 
 <div id="toast"></div>
 <div id="tint-overlay"></div>
@@ -215,18 +212,12 @@ html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-fa
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// ─── SERIES DEFINITIONS ───────────────────────────────────────────
 const SERIES = {
   zomb: {
-    id: 'zomb',
-    name: 'Zom-B',
-    sub: 'Darren Shan',
-    bookFolder: 'books',
-    coversVar: 'BOOK_COVERS',
-    coversFile: 'books/covers.js',
-    storeKey: 'zomb_data_v2',
-    tintKey: 'zomb_tint',
-    catalogue: [
+    id:'zomb', name:'Zom-B', sub:'Darren Shan',
+    bookFolder:'books', coversVar:'BOOK_COVERS', coversFile:'books/covers.js',
+    storeKey:'zomb_data_v2', tintKey:'zomb_tint',
+    catalogue:[
       {id:'01',num:'1', title:'Zom-B',            isbn:'9780857077523'},
       {id:'02',num:'2', title:'Zom-B Underground', isbn:'9780857077592'},
       {id:'03',num:'3', title:'Zom-B City',        isbn:'9780857077608'},
@@ -241,7 +232,7 @@ const SERIES = {
       {id:'12',num:'12',title:'Zom-B Fugitive',    isbn:'9780857077684'},
       {id:'13',num:'13',title:'Zom-B Goddess',     isbn:'9780857077691'},
     ],
-    spineColors: [
+    spineColors:[
       ['#1a0a0a','#6b1a1a'],['#1a0d08','#7a3010'],['#0d1a0d','#2d6b2d'],
       ['#0a0d1a','#1a3a6b'],['#1a1208','#7a5f10'],['#1a0810','#6b1040'],
       ['#0d1a18','#1a6b5a'],['#1a0a15','#5a1060'],['#0f1a0a','#3a6b1a'],
@@ -250,16 +241,11 @@ const SERIES = {
     ],
   },
   demonata: {
-    id: 'demonata',
-    name: 'The Demonata',
-    sub: 'Darren Shan',
-    bookFolder: 'demonata',
-    coversVar: 'DEMONATA_COVERS',
-    coversFile: 'demonata/covers.js',
-    storeKey: 'demonata_data_v1',
-    tintKey: 'demonata_tint',
-    catalogue: [
-      {id:'01',num:'1', title:"Lord Loss"},
+    id:'demonata', name:'The Demonata', sub:'Darren Shan',
+    bookFolder:'demonata', coversVar:'DEMONATA_COVERS', coversFile:'demonata/covers.js',
+    storeKey:'demonata_data_v1', tintKey:'demonata_tint',
+    catalogue:[
+      {id:'01',num:'1', title:'Lord Loss'},
       {id:'02',num:'2', title:'Demon Thief'},
       {id:'03',num:'3', title:'Slawter'},
       {id:'04',num:'4', title:'Bec'},
@@ -270,7 +256,7 @@ const SERIES = {
       {id:'09',num:'9', title:'Dark Calling'},
       {id:'10',num:'10',title:"Hell's Heroes"},
     ],
-    spineColors: [
+    spineColors:[
       ['#1a0808','#6b0a0a'],['#0d0a1a','#3a1a6b'],['#1a0a0d','#6b1a40'],
       ['#0a1a0d','#1a6b2d'],['#1a1008','#7a4010'],['#0a0d1a','#102060'],
       ['#1a0808','#8b1a1a'],['#100a1a','#501080'],['#081a12','#0a6b3a'],
@@ -279,7 +265,6 @@ const SERIES = {
   },
 };
 
-// ─── TINTS ────────────────────────────────────────────────────────
 const TINTS = [
   {id:'normal', label:'Normal',        swatch:'#f5f5f0', cls:''},
   {id:'sepia',  label:'Sepia',         swatch:'#c8933a', cls:'tint-sepia'},
@@ -290,472 +275,387 @@ const TINTS = [
   {id:'green',  label:'Green',         swatch:'#2d6b2d', cls:'tint-green'},
 ];
 
-// ─── STATE ────────────────────────────────────────────────────────
-let currentSeries = null;
-let currentTint = 'normal';
-let state = {bookmarks:{}, progress:{}, totals:{}};
-let currentBook = null, pdfDoc = null, currentPage = 1, totalPages = 1;
-let sortAlpha = false, ctxId = null;
-const pdfCache = {};
+let currentSeries=null, currentTint='normal';
+let state={bookmarks:{},progress:{},totals:{}};
+let currentBook=null, pdfDoc=null, currentPage=1, totalPages=1;
+let sortAlpha=false, ctxId=null;
+const pdfCache={};
 
-function loadState() {
-  if (!currentSeries) return;
-  try {
-    const s = localStorage.getItem(currentSeries.storeKey);
-    if (s) state = {bookmarks:{}, progress:{}, totals:{}, ...JSON.parse(s)};
-    else state = {bookmarks:{}, progress:{}, totals:{}};
-  } catch(e) { state = {bookmarks:{}, progress:{}, totals:{}}; }
+function loadState(){
+  if(!currentSeries) return;
+  try{ const s=localStorage.getItem(currentSeries.storeKey); if(s) state={bookmarks:{},progress:{},totals:{},...JSON.parse(s)}; else state={bookmarks:{},progress:{},totals:{}}; }catch(e){ state={bookmarks:{},progress:{},totals:{}}; }
 }
-function saveState() {
-  if (!currentSeries) return;
-  try { localStorage.setItem(currentSeries.storeKey, JSON.stringify(state)); } catch(e) {}
+function saveState(){
+  if(!currentSeries) return;
+  try{ localStorage.setItem(currentSeries.storeKey,JSON.stringify(state)); }catch(e){}
 }
 
-// ─── SERIES HOME ──────────────────────────────────────────────────
-function buildSeriesHome() {
-  const grid = document.getElementById('series-grid');
-  grid.innerHTML = '';
-  Object.values(SERIES).forEach(s => {
-    const card = document.createElement('div');
-    card.className = 'series-card';
-    card.dataset.id = s.id;
-
-    // mosaic of first 4 cover placeholders — real covers injected after covers.js loads
-    const bg = document.createElement('div');
-    bg.className = 'series-bg';
-    bg.id = `series-bg-${s.id}`;
-    // 4 spine-coloured tiles as placeholder
-    for (let i = 0; i < 4; i++) {
-      const tile = document.createElement('div');
-      const [c1,c2] = s.spineColors[i];
-      tile.style.cssText = `background:linear-gradient(135deg,${c1},${c2});width:100%;height:100%`;
+// ── SERIES HOME ──
+function buildSeriesHome(){
+  const grid=document.getElementById('series-grid');
+  grid.innerHTML='';
+  Object.values(SERIES).forEach(s=>{
+    const card=document.createElement('div');
+    card.className='series-card';
+    card.dataset.id=s.id;
+    const bg=document.createElement('div');
+    bg.className='series-bg';
+    bg.id=`series-bg-${s.id}`;
+    for(let i=0;i<4;i++){
+      const tile=document.createElement('div');
+      const [c1,c2]=s.spineColors[i];
+      tile.style.cssText=`background:linear-gradient(135deg,${c1},${c2});width:100%;height:100%`;
       bg.appendChild(tile);
     }
-
-    card.innerHTML = `
-      <div class="series-overlay"></div>
-      <div class="series-info">
-        <div class="series-name">${s.name}</div>
-        <div class="series-sub">${s.sub}</div>
-        <div class="series-count">${s.catalogue.length} Books</div>
-      </div>`;
-    card.insertBefore(bg, card.firstChild);
-    card.addEventListener('click', () => enterSeries(s.id));
+    card.innerHTML=`<div class="series-overlay"></div><div class="series-info"><div class="series-name">${s.name}</div><div class="series-sub">${s.sub}</div><div class="series-count">${s.catalogue.length} Books</div></div>`;
+    card.insertBefore(bg,card.firstChild);
+    card.addEventListener('click',()=>enterSeries(s.id));
     grid.appendChild(card);
   });
-
-  // lazy-load covers for mosaics
   loadSeriesMosaics();
 }
 
-function loadSeriesMosaics() {
-  Object.values(SERIES).forEach(s => {
-    const script = document.createElement('script');
-    script.src = s.coversFile;
-    script.onload = () => {
-      const covers = window[s.coversVar];
-      if (!covers) return;
-      const bg = document.getElementById(`series-bg-${s.id}`);
-      if (!bg) return;
-      bg.innerHTML = '';
-      ['01','02','03','04'].forEach(id => {
-        const url = covers[id];
-        if (url) {
-          const img = document.createElement('img');
-          img.className = 'series-bg-img';
-          img.src = url;
-          bg.appendChild(img);
-        }
+function loadSeriesMosaics(){
+  Object.values(SERIES).forEach(s=>{
+    const sc=document.createElement('script');
+    sc.src=s.coversFile;
+    sc.onload=()=>{
+      const covers=window[s.coversVar];
+      if(!covers) return;
+      const bg=document.getElementById(`series-bg-${s.id}`);
+      if(!bg) return;
+      bg.innerHTML='';
+      ['01','02','03','04'].forEach(id=>{
+        const url=covers[id];
+        if(url){ const img=document.createElement('img'); img.className='series-bg-img'; img.src=url; bg.appendChild(img); }
       });
     };
-    document.head.appendChild(script);
+    document.head.appendChild(sc);
   });
 }
 
-function enterSeries(id) {
-  currentSeries = SERIES[id];
-  currentTint = localStorage.getItem(currentSeries.tintKey) || 'normal';
+function enterSeries(id){
+  currentSeries=SERIES[id];
+  currentTint=localStorage.getItem(currentSeries.tintKey)||'normal';
   loadState();
-  sortAlpha = false;
-
-  document.getElementById('topbar-title').textContent = currentSeries.name.toUpperCase();
-  document.getElementById('topbar-sub').textContent = currentSeries.sub + ' · Complete Series';
-  document.getElementById('sort-btn').style.display = 'flex';
-  document.getElementById('library-label').textContent = 'Complete Series';
-
-  // update tint picker active state for this series
-  document.querySelectorAll('.tint-btn').forEach(b =>
-    b.classList.toggle('active', b.dataset.id === currentTint));
-
+  sortAlpha=false;
+  document.getElementById('topbar-title').textContent=currentSeries.name.toUpperCase();
+  document.getElementById('topbar-sub').textContent=' · '+currentSeries.sub;
+  document.getElementById('sort-btn').style.display='flex';
+  document.querySelectorAll('.tint-btn').forEach(b=>b.classList.toggle('active',b.dataset.id===currentTint));
   renderLibrary();
   showView('view-library');
 }
 
-// ─── LIBRARY ──────────────────────────────────────────────────────
-function renderLibrary() {
-  const grid = document.getElementById('book-grid');
-  grid.innerHTML = '';
-  const catalogue = currentSeries.catalogue;
-  const list = sortAlpha ? [...catalogue].sort((a,b) => a.title.localeCompare(b.title)) : catalogue;
-
-  list.forEach(book => {
-    const [c1,c2] = currentSeries.spineColors[parseInt(book.id)-1] || currentSeries.spineColors[0];
-    const hasBm = state.bookmarks[book.id] != null;
-    const prog  = state.progress[book.id] || 0;
-    const total = state.totals[book.id] || 0;
-    const pct   = total ? Math.min(100, Math.round(prog/total*100)) : 0;
-
-    const covers = window[currentSeries.coversVar];
-    const coverUrl = (covers && covers[book.id]) || '';
-
-    const card = document.createElement('div');
-    card.className = 'book-card';
-    card.dataset.id = book.id;
-    card.innerHTML = `
+// ── LIBRARY ──
+function renderLibrary(){
+  const grid=document.getElementById('book-grid');
+  grid.innerHTML='';
+  const list=sortAlpha?[...currentSeries.catalogue].sort((a,b)=>a.title.localeCompare(b.title)):currentSeries.catalogue;
+  list.forEach(book=>{
+    const [c1,c2]=currentSeries.spineColors[parseInt(book.id)-1]||currentSeries.spineColors[0];
+    const hasBm=state.bookmarks[book.id]!=null;
+    const prog=state.progress[book.id]||0;
+    const total=state.totals[book.id]||0;
+    const pct=total?Math.min(100,Math.round(prog/total*100)):0;
+    const covers=window[currentSeries.coversVar];
+    const coverUrl=(covers&&covers[book.id])||'';
+    const card=document.createElement('div');
+    card.className='book-card';
+    card.dataset.id=book.id;
+    card.innerHTML=`
       <div class="book-cover" style="background:linear-gradient(155deg,${c1},${c2})">
-        ${coverUrl ? `<img class="cover-img" src="${coverUrl}" alt="" loading="lazy">` : ''}
-        <div class="cover-spine">
-          <div class="spine-inner">
-            <div class="book-num">Book ${book.num}</div>
-            <div class="book-title-spine">${book.title}</div>
-          </div>
-        </div>
-        ${book.novella ? '<div class="novella-flag">Novella</div>' : ''}
-        ${hasBm ? '<div class="bookmark-dot"></div>' : ''}
+        ${coverUrl?`<img class="cover-img" src="${coverUrl}" alt="" loading="lazy">`:''}
+        <div class="cover-spine"><div class="spine-inner"><div class="book-num">Book ${book.num}</div><div class="book-title-spine">${book.title}</div></div></div>
+        ${book.novella?'<div class="novella-flag">Novella</div>':''}
+        ${hasBm?'<div class="bookmark-dot"></div>':''}
       </div>
-      <div class="book-meta">
-        <div class="book-meta-name">${book.title}</div>
-        <div class="book-progress-bar"><div class="book-progress-fill" style="width:${pct}%"></div></div>
-      </div>`;
-
-    const img = card.querySelector('.cover-img');
-    if (img) {
-      img.addEventListener('error', () => { img.style.display='none'; });
-      img.addEventListener('load',  () => { if(img.naturalWidth<=1) img.style.display='none'; });
-    }
-
-    card.addEventListener('click', () => openBook(book.id));
+      <div class="book-meta"><div class="book-meta-name">${book.title}</div><div class="book-progress-bar"><div class="book-progress-fill" style="width:${pct}%"></div></div></div>`;
+    const img=card.querySelector('.cover-img');
+    if(img){ img.addEventListener('error',()=>{img.style.display='none';}); img.addEventListener('load',()=>{if(img.naturalWidth<=1)img.style.display='none';}); }
+    card.addEventListener('click',()=>openBook(book.id));
     let pt;
-    card.addEventListener('touchstart', () => {
-      pt = setTimeout(() => { const r=card.getBoundingClientRect(); showCtx({clientX:r.left+r.width/2, clientY:r.top+60}, book.id); }, 480);
-    }, {passive:true});
-    card.addEventListener('touchend',  () => clearTimeout(pt), {passive:true});
-    card.addEventListener('touchmove', () => clearTimeout(pt), {passive:true});
-    card.addEventListener('contextmenu', e => { e.preventDefault(); showCtx(e, book.id); });
+    card.addEventListener('touchstart',()=>{ pt=setTimeout(()=>{ const r=card.getBoundingClientRect(); showCtx({clientX:r.left+r.width/2,clientY:r.top+60},book.id); },480); },{passive:true});
+    card.addEventListener('touchend',()=>clearTimeout(pt),{passive:true});
+    card.addEventListener('touchmove',()=>clearTimeout(pt),{passive:true});
+    card.addEventListener('contextmenu',e=>{e.preventDefault();showCtx(e,book.id);});
     grid.appendChild(card);
   });
-
-  // lazy inject covers if script already loaded
-  const covers = window[currentSeries.coversVar];
-  if (!covers) {
-    const s = document.createElement('script');
-    s.src = currentSeries.coversFile;
-    s.onload = () => renderLibrary();
-    document.head.appendChild(s);
+  const covers=window[currentSeries.coversVar];
+  if(!covers){
+    const sc=document.createElement('script');
+    sc.src=currentSeries.coversFile;
+    sc.onload=()=>renderLibrary();
+    document.head.appendChild(sc);
   }
 }
 
-document.getElementById('sort-btn').addEventListener('click', () => {
-  sortAlpha = !sortAlpha;
-  toast(sortAlpha ? 'Sorted A–Z' : 'Series order');
-  renderLibrary();
-});
+document.getElementById('sort-btn').addEventListener('click',()=>{ sortAlpha=!sortAlpha; toast(sortAlpha?'Sorted A–Z':'Series order'); renderLibrary(); });
 
-// ─── CTX MENU ─────────────────────────────────────────────────────
-function showCtx(e, id) {
-  ctxId = id;
-  const hasBm = state.bookmarks[id] != null;
-  document.getElementById('ctx-goto-bm').classList.toggle('muted', !hasBm);
-  document.getElementById('ctx-clear-bm').classList.toggle('muted', !hasBm);
-  const m = document.getElementById('ctx-menu');
-  m.style.display = 'block';
-  m.style.left = Math.min(e.clientX, innerWidth  - m.offsetWidth  - 6) + 'px';
-  m.style.top  = Math.min(e.clientY, innerHeight - m.offsetHeight - 6) + 'px';
+// ── CTX MENU ──
+function showCtx(e,id){
+  ctxId=id;
+  const hasBm=state.bookmarks[id]!=null;
+  document.getElementById('ctx-goto-bm').classList.toggle('muted',!hasBm);
+  document.getElementById('ctx-clear-bm').classList.toggle('muted',!hasBm);
+  const m=document.getElementById('ctx-menu'); m.style.display='block';
+  m.style.left=Math.min(e.clientX,innerWidth-m.offsetWidth-6)+'px';
+  m.style.top=Math.min(e.clientY,innerHeight-m.offsetHeight-6)+'px';
 }
-function hideCtx() { document.getElementById('ctx-menu').style.display = 'none'; }
-document.addEventListener('click', e => { if(!document.getElementById('ctx-menu').contains(e.target)) hideCtx(); });
-document.getElementById('ctx-open').addEventListener('click',     () => { hideCtx(); openBook(ctxId); });
-document.getElementById('ctx-goto-bm').addEventListener('click',  () => { hideCtx(); const bm=state.bookmarks[ctxId]; if(bm!=null) openBook(ctxId,bm); });
-document.getElementById('ctx-clear-bm').addEventListener('click', () => { hideCtx(); delete state.bookmarks[ctxId]; saveState(); renderLibrary(); toast('Bookmark cleared'); });
+function hideCtx(){document.getElementById('ctx-menu').style.display='none';}
+document.addEventListener('click',e=>{if(!document.getElementById('ctx-menu').contains(e.target))hideCtx();});
+document.getElementById('ctx-open').addEventListener('click',()=>{hideCtx();openBook(ctxId);});
+document.getElementById('ctx-goto-bm').addEventListener('click',()=>{hideCtx();const bm=state.bookmarks[ctxId];if(bm!=null)openBook(ctxId,bm);});
+document.getElementById('ctx-clear-bm').addEventListener('click',()=>{hideCtx();delete state.bookmarks[ctxId];saveState();renderLibrary();toast('Bookmark cleared');});
 
-// ─── OPEN BOOK ────────────────────────────────────────────────────
-async function openBook(id, jumpTo) {
-  const book = currentSeries.catalogue.find(b => b.id === id);
-  if (!book) return;
-  currentBook = book;
+// ── OPEN BOOK ──
+async function openBook(id,jumpTo){
+  const book=currentSeries.catalogue.find(b=>b.id===id);
+  if(!book) return;
+  currentBook=book;
   showView('view-reader');
-  document.getElementById('reader-title').textContent = `${book.num}. ${book.title}`;
+  document.getElementById('reader-title').textContent=`${book.num}. ${book.title}`;
   showLoading(`Loading ${book.title}…`);
-  try {
-    const bytes = await loadBookData(id);
-    showLoading('Rendering…');
-    await loadPDF(book, bytes, jumpTo);
-  } catch(err) {
-    hideLoading(); toast('Error: ' + (err.message || 'could not open')); return;
-  }
+  try{ const bytes=await loadBookData(id); showLoading('Rendering…'); await loadPDF(book,bytes,jumpTo); }
+  catch(err){ hideLoading(); toast('Error: '+(err.message||'could not open')); return; }
   hideLoading();
 }
 
-// ─── LOAD BOOK DATA ───────────────────────────────────────────────
-async function loadBookData(id) {
-  const cacheKey = currentSeries.id + '_' + id;
-  if (pdfCache[cacheKey]) return pdfCache[cacheKey];
-
-  // initialise BOOK_DATA store for this series if needed
-  if (!window.BOOK_DATA) window.BOOK_DATA = {};
-
-  const resp = await fetch(`${currentSeries.bookFolder}/${id}.js`);
-  if (!resp.ok) throw new Error(`Could not load ${currentSeries.bookFolder}/${id}.js (${resp.status})`);
-  const text = await resp.text();
-  const match = text.match(/window\.BOOK_DATA\['\d+'\]='([A-Za-z0-9+/=]+)';/);
-  if (!match) throw new Error(`Could not parse book ${id}`);
-  const bin = atob(match[1]);
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  pdfCache[cacheKey] = bytes;
+async function loadBookData(id){
+  const cacheKey=currentSeries.id+'_'+id;
+  if(pdfCache[cacheKey]) return pdfCache[cacheKey];
+  if(!window.BOOK_DATA) window.BOOK_DATA={};
+  const resp=await fetch(`${currentSeries.bookFolder}/${id}.js`);
+  if(!resp.ok) throw new Error(`Could not load ${currentSeries.bookFolder}/${id}.js (${resp.status})`);
+  const text=await resp.text();
+  const match=text.match(/window\.BOOK_DATA\['\d+'\]='([A-Za-z0-9+/=]+)';/);
+  if(!match) throw new Error(`Could not parse book ${id}`);
+  const bin=atob(match[1]);
+  const bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  pdfCache[cacheKey]=bytes;
   return bytes;
 }
 
-// ─── PDF + THREE-SLOT PAGE SYSTEM ─────────────────────────────────
-async function loadPDF(book, bytes, jumpToPage) {
-  pdfDoc = await pdfjsLib.getDocument({data: bytes}).promise;
-  totalPages = pdfDoc.numPages;
-  state.totals[book.id] = totalPages; saveState();
-  const start = jumpToPage != null ? jumpToPage : (state.progress[book.id] || 1);
-  await gotoPage(start, false);
+// ── PDF ──
+async function loadPDF(book,bytes,jumpToPage){
+  pdfDoc=await pdfjsLib.getDocument({data:bytes}).promise;
+  totalPages=pdfDoc.numPages;
+  state.totals[book.id]=totalPages; saveState();
+  const start=jumpToPage!=null?jumpToPage:(state.progress[book.id]||1);
+  await gotoPage(start,false);
 }
 
-const S = {};
-function slot(name) {
-  if (!S[name]) {
-    const el = document.createElement('div');
-    el.className = 'page-slot';
-    const nav = document.getElementById('reader-nav');
-    document.getElementById('reader-content').insertBefore(el, nav);
-    S[name] = el;
+const S={};
+function slot(name){
+  if(!S[name]){
+    const el=document.createElement('div');
+    el.className='page-slot';
+    document.getElementById('reader-content').insertBefore(el,document.getElementById('reader-nav'));
+    S[name]=el;
   }
   return S[name];
 }
 
-function resetPositions(animated) {
-  const d = animated ? '' : '0s';
-  slot('cur') .style.cssText = `transition-duration:${d};transform:translateY(0)`;
-  slot('next').style.cssText = `transition-duration:${d};transform:translateY(-100%)`;
-  slot('prev').style.cssText = `transition-duration:${d};transform:translateY(100%)`;
+function resetPositions(animated){
+  const d=animated?'':'0s';
+  slot('cur').style.cssText=`transition-duration:${d};transform:translateY(0)`;
+  slot('next').style.cssText=`transition-duration:${d};transform:translateY(-100%)`;
+  slot('prev').style.cssText=`transition-duration:${d};transform:translateY(100%)`;
 }
 
-async function renderPage(name, pageNum) {
-  const el = slot(name);
-  el.innerHTML = '';
-  if (!pdfDoc || pageNum < 1 || pageNum > totalPages) return;
-  const page = await pdfDoc.getPage(pageNum);
-  const vp0 = page.getViewport({scale:1});
-  const rc = document.getElementById('reader-content');
-  const W = rc.clientWidth;
-  const dpr = window.devicePixelRatio || 1;
-  // Render to fill width at 150% — text is readable, scroll down to see full page
-  const scale = (W / vp0.width) * dpr * 1.5;
-  const vp = page.getViewport({scale});
-  const canvas = document.createElement('canvas');
-  canvas.width  = Math.round(vp.width);
-  canvas.height = Math.round(vp.height);
-  canvas.style.width  = Math.round(vp.width  / dpr) + 'px';
-  canvas.style.height = Math.round(vp.height / dpr) + 'px';
-  canvas.className = tintClass();
-  await page.render({canvasContext: canvas.getContext('2d'), viewport: vp}).promise;
+async function renderPage(name,pageNum){
+  const el=slot(name);
+  el.innerHTML='';
+  if(!pdfDoc||pageNum<1||pageNum>totalPages) return;
+  const page=await pdfDoc.getPage(pageNum);
+  const vp0=page.getViewport({scale:1});
+  const rc=document.getElementById('reader-content');
+  const W=rc.clientWidth, H=rc.clientHeight;
+  const dpr=window.devicePixelRatio||1;
+  const scale=Math.min(W/vp0.width,H/vp0.height)*dpr;
+  const vp=page.getViewport({scale});
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.round(vp.width);
+  canvas.height=Math.round(vp.height);
+  canvas.style.width=Math.round(vp.width/dpr)+'px';
+  canvas.style.height=Math.round(vp.height/dpr)+'px';
+  canvas.className=tintClass();
+  await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
   el.appendChild(canvas);
-  el.scrollTop = 0;
 }
 
-async function gotoPage(n, animated=true) {
-  n = Math.max(1, Math.min(n, totalPages));
-  currentPage = n;
-  await renderPage('cur', n);
+async function gotoPage(n,animated=true){
+  n=Math.max(1,Math.min(n,totalPages));
+  currentPage=n;
+  await renderPage('cur',n);
   resetPositions(animated);
   updateUI();
   saveProgress();
-  renderPage('next', n+1);
-  renderPage('prev', n-1);
+  renderPage('next',n+1);
+  renderPage('prev',n-1);
 }
 
-// ─── TOUCH: SCROLL TO READ, EDGE-SWIPE TO TURN PAGE ─────────────
-// The page slot scrolls normally. A page turn only fires when the
-// user starts their touch in the top or bottom 60px of the screen
-// AND drags far enough (120px). Anywhere else = normal scroll.
-const EDGE_ZONE   = 60;   // px from top/bottom edge that activates page-turn
-const TURN_THRESH = 120;  // px drag needed to confirm a page turn
+// ── SWIPE: only fires when drag is fast AND covers >40% of screen height ──
+// Normal slow scrolling / pinch zoom will never trigger a page turn.
+let ty0=0, tx0=0, tTime=0, dragging=false, axis=null;
+const SWIPE_DIST  = 0.35; // must drag >35% of screen height
+const SWIPE_VEL   = 0.4;  // AND velocity > 0.4px/ms  (fast flick)
+const rcEl=document.getElementById('reader-content');
 
-let tStart = null; // {x, y, edge: 'top'|'bottom'|null}
-let turning = false;
+rcEl.addEventListener('touchstart',e=>{
+  if(e.touches.length>1){dragging=false;axis=null;return;} // let pinch-zoom work
+  ty0=e.touches[0].clientY; tx0=e.touches[0].clientX; tTime=Date.now();
+  dragging=false; axis=null;
+},{passive:true});
 
-const rcEl = document.getElementById('reader-content');
+rcEl.addEventListener('touchmove',e=>{
+  if(e.touches.length>1) return; // pinch — don't intercept
+  const dy=e.touches[0].clientY-ty0, dx=e.touches[0].clientX-tx0;
+  if(!axis&&(Math.abs(dy)>8||Math.abs(dx)>8))
+    axis=Math.abs(dy)>Math.abs(dx)*1.2?'y':'x';
+  if(axis!=='y') return;
+  // Only prevent default (and start dragging the page) if movement is large enough
+  // to suggest an intentional page-flip, not just scrolling
+  if(Math.abs(dy) > rcEl.clientHeight * SWIPE_DIST){
+    e.preventDefault();
+    dragging=true;
+    ['cur','next','prev'].forEach(n=>slot(n).style.transitionDuration='0s');
+    slot('cur').style.transform=`translateY(${dy}px)`;
+    slot('next').style.transform=`translateY(calc(-100% + ${dy}px))`;
+    slot('prev').style.transform=`translateY(calc(100% + ${dy}px))`;
+  }
+},{passive:false});
 
-rcEl.addEventListener('touchstart', e => {
-  if (e.touches.length > 1) { tStart = null; return; } // let pinch-zoom pass through
-  const y = e.touches[0].clientY;
-  const h = rcEl.clientHeight;
-  const inEdge = y < EDGE_ZONE ? 'top' : y > h - EDGE_ZONE ? 'bottom' : null;
-  tStart = { x: e.touches[0].clientX, y, edge: inEdge };
-  turning = false;
-}, {passive: true});
+rcEl.addEventListener('touchend',e=>{
+  const dy=e.changedTouches[0].clientY-ty0;
+  const dt=Date.now()-tTime;
+  const vel=Math.abs(dy)/Math.max(dt,1);
+  const dist=Math.abs(dy)/rcEl.clientHeight;
 
-rcEl.addEventListener('touchmove', e => {
-  if (!tStart || e.touches.length > 1) return;
-  if (!tStart.edge) return; // not in edge zone — let scroll happen naturally
-  const dy = e.touches[0].clientY - tStart.y;
-  // Only hijack if clearly vertical
-  if (Math.abs(dy) < Math.abs(e.touches[0].clientX - tStart.x) * 1.2) return;
-  e.preventDefault();
-  turning = true;
-  const progress = Math.max(-1, Math.min(1, dy / TURN_THRESH));
-  ['cur','next','prev'].forEach(n => slot(n).style.transitionDuration = '0s');
-  slot('cur') .style.transform = `translateY(${dy * 0.4}px)`;
-  slot('next').style.transform = `translateY(calc(-100% + ${dy * 0.4}px))`;
-  slot('prev').style.transform = `translateY(calc(100% + ${dy * 0.4}px))`;
-}, {passive: false});
+  if(!dragging){
+    // pure tap — toggle immersive only if barely moved
+    if(Math.abs(dy)<10&&Math.abs(e.changedTouches[0].clientX-tx0)<10) toggleImmersive();
+    return;
+  }
+  dragging=false;
 
-rcEl.addEventListener('touchend', e => {
-  if (!tStart) return;
-  const dy = e.changedTouches[0].clientY - tStart.y;
-  const wasTap = !turning && Math.abs(dy) < 8 && Math.abs(e.changedTouches[0].clientX - tStart.x) < 8;
+  // Require both distance AND velocity to confirm page turn
+  const confirm = dist > SWIPE_DIST && vel > SWIPE_VEL;
 
-  if (wasTap) { toggleImmersive(); tStart = null; return; }
-  if (!turning) { tStart = null; return; }
-
-  turning = false;
-  ['cur','next','prev'].forEach(n => slot(n).style.transitionDuration = '');
-
-  if (dy < -TURN_THRESH && currentPage < totalPages) {
-    // swiped up far enough from bottom edge → next page
-    slot('cur') .style.transform = 'translateY(-100%)';
-    slot('next').style.transform = 'translateY(0)';
-    slot('prev').style.transform = 'translateY(-200%)';
-    setTimeout(() => gotoPage(currentPage + 1, false), 330);
-  } else if (dy > TURN_THRESH && currentPage > 1) {
-    // swiped down far enough from top edge → prev page
-    slot('cur') .style.transform = 'translateY(100%)';
-    slot('prev').style.transform = 'translateY(0)';
-    slot('next').style.transform = 'translateY(200%)';
-    setTimeout(() => gotoPage(currentPage - 1, false), 330);
+  if(confirm && dy<0 && currentPage<totalPages){
+    ['cur','next','prev'].forEach(n=>slot(n).style.transitionDuration='');
+    slot('cur').style.transform='translateY(-100%)';
+    slot('next').style.transform='translateY(0)';
+    slot('prev').style.transform='translateY(-200%)';
+    setTimeout(()=>gotoPage(currentPage+1,false),330);
+  } else if(confirm && dy>0 && currentPage>1){
+    ['cur','next','prev'].forEach(n=>slot(n).style.transitionDuration='');
+    slot('cur').style.transform='translateY(100%)';
+    slot('prev').style.transform='translateY(0)';
+    slot('next').style.transform='translateY(200%)';
+    setTimeout(()=>gotoPage(currentPage-1,false),330);
   } else {
     resetPositions(true);
   }
-  tStart = null;
-}, {passive: true});
+},{passive:true});
 
-// ─── IMMERSIVE ────────────────────────────────────────────────────
-let immersive = false;
-function toggleImmersive() {
-  immersive = !immersive;
-  document.getElementById('view-reader').classList.toggle('immersive', immersive);
-  if (immersive) toast('Tap page to show controls');
+// ── IMMERSIVE ──
+let immersive=false;
+function toggleImmersive(){
+  immersive=!immersive;
+  document.getElementById('view-reader').classList.toggle('immersive',immersive);
+  if(immersive) toast('Tap page to show controls');
 }
 
-// ─── READER UI ────────────────────────────────────────────────────
-function updateUI() {
-  document.getElementById('reader-page-info').textContent = `${currentPage} / ${totalPages}`;
-  const p = document.getElementById('reader-progress'); p.max = totalPages; p.value = currentPage;
-  const bm = currentBook ? state.bookmarks[currentBook.id] : null;
-  const filled = bm === currentPage;
-  const path = document.querySelector('#bm-icon path');
-  path.setAttribute('fill',   filled ? 'var(--amber)' : 'none');
-  path.setAttribute('stroke', filled ? 'var(--amber)' : 'currentColor');
+// ── READER UI ──
+function updateUI(){
+  document.getElementById('reader-page-info').textContent=`${currentPage} / ${totalPages}`;
+  const p=document.getElementById('reader-progress'); p.max=totalPages; p.value=currentPage;
+  const bm=currentBook?state.bookmarks[currentBook.id]:null;
+  const filled=bm===currentPage;
+  const path=document.querySelector('#bm-icon path');
+  path.setAttribute('fill',filled?'var(--amber)':'none');
+  path.setAttribute('stroke',filled?'var(--amber)':'currentColor');
 }
-function saveProgress() { if (!currentBook) return; state.progress[currentBook.id] = currentPage; saveState(); }
+function saveProgress(){if(!currentBook)return;state.progress[currentBook.id]=currentPage;saveState();}
 
-document.getElementById('prev-btn').addEventListener('click', () => { if(currentPage>1) gotoPage(currentPage-1); });
-document.getElementById('next-btn').addEventListener('click', () => { if(currentPage<totalPages) gotoPage(currentPage+1); });
-document.getElementById('reader-progress').addEventListener('change', e => gotoPage(parseInt(e.target.value)));
+document.getElementById('prev-btn').addEventListener('click',()=>{if(currentPage>1)gotoPage(currentPage-1);});
+document.getElementById('next-btn').addEventListener('click',()=>{if(currentPage<totalPages)gotoPage(currentPage+1);});
+document.getElementById('reader-progress').addEventListener('change',e=>gotoPage(parseInt(e.target.value)));
 
-document.getElementById('bookmark-btn').addEventListener('click', () => {
-  if (!currentBook) return;
-  const ex = state.bookmarks[currentBook.id];
-  if (ex === currentPage) { delete state.bookmarks[currentBook.id]; toast('Bookmark removed'); }
-  else { state.bookmarks[currentBook.id] = currentPage; toast(`Page ${currentPage} bookmarked`); }
+document.getElementById('bookmark-btn').addEventListener('click',()=>{
+  if(!currentBook) return;
+  const ex=state.bookmarks[currentBook.id];
+  if(ex===currentPage){delete state.bookmarks[currentBook.id];toast('Bookmark removed');}
+  else{state.bookmarks[currentBook.id]=currentPage;toast(`Page ${currentPage} bookmarked`);}
   saveState(); updateUI();
 });
 
-document.getElementById('back-btn').addEventListener('click', () => {
+document.getElementById('back-btn').addEventListener('click',()=>{
   saveProgress();
-  if (pdfDoc) { try { pdfDoc.destroy(); } catch(e) {} pdfDoc = null; }
-  ['cur','prev','next'].forEach(n => { if(S[n]) S[n].innerHTML=''; });
-  currentBook = null; immersive = false;
+  if(pdfDoc){try{pdfDoc.destroy();}catch(e){} pdfDoc=null;}
+  ['cur','prev','next'].forEach(n=>{if(S[n])S[n].innerHTML='';});
+  currentBook=null; immersive=false;
   document.getElementById('view-reader').classList.remove('immersive');
-  showView('view-library');
-  renderLibrary();
+  showView('view-library'); renderLibrary();
 });
 
-// ─── TINT ─────────────────────────────────────────────────────────
-function tintClass() { return (TINTS.find(t => t.id === currentTint) || TINTS[0]).cls; }
-function applyTintAll() {
-  const cls = tintClass();
-  document.querySelectorAll('.page-slot canvas').forEach(c => { c.className = cls; });
-}
-function buildTintPicker() {
-  const grid = document.getElementById('tint-grid');
-  TINTS.forEach(t => {
-    const btn = document.createElement('button');
-    btn.className = 'tint-btn' + (t.id === currentTint ? ' active' : '');
-    btn.dataset.id = t.id;
-    btn.innerHTML = `<span class="tint-swatch" style="background:${t.swatch}"></span>${t.label}`;
-    btn.addEventListener('click', () => {
-      currentTint = t.id;
-      if (currentSeries) localStorage.setItem(currentSeries.tintKey, t.id);
-      document.querySelectorAll('.tint-btn').forEach(b => b.classList.toggle('active', b.dataset.id === t.id));
-      applyTintAll();
-      closeTintPanel();
+// ── TINT ──
+function tintClass(){return(TINTS.find(t=>t.id===currentTint)||TINTS[0]).cls;}
+function applyTintAll(){const cls=tintClass();document.querySelectorAll('.page-slot canvas').forEach(c=>{c.className=cls;});}
+function buildTintPicker(){
+  const grid=document.getElementById('tint-grid');
+  TINTS.forEach(t=>{
+    const btn=document.createElement('button');
+    btn.className='tint-btn'+(t.id===currentTint?' active':'');
+    btn.dataset.id=t.id;
+    btn.innerHTML=`<span class="tint-swatch" style="background:${t.swatch}"></span>${t.label}`;
+    btn.addEventListener('click',()=>{
+      currentTint=t.id;
+      if(currentSeries) localStorage.setItem(currentSeries.tintKey,t.id);
+      document.querySelectorAll('.tint-btn').forEach(b=>b.classList.toggle('active',b.dataset.id===t.id));
+      applyTintAll(); closeTintPanel();
     });
     grid.appendChild(btn);
   });
 }
-document.getElementById('tint-btn').addEventListener('click', () => {
-  document.getElementById('tint-panel').classList.add('open');
-  document.getElementById('tint-overlay').classList.add('open');
-});
-document.getElementById('tint-overlay').addEventListener('click', closeTintPanel);
-function closeTintPanel() {
-  document.getElementById('tint-panel').classList.remove('open');
-  document.getElementById('tint-overlay').classList.remove('open');
-}
+document.getElementById('tint-btn').addEventListener('click',()=>{ document.getElementById('tint-panel').classList.add('open'); document.getElementById('tint-overlay').classList.add('open'); });
+document.getElementById('tint-overlay').addEventListener('click',closeTintPanel);
+function closeTintPanel(){document.getElementById('tint-panel').classList.remove('open');document.getElementById('tint-overlay').classList.remove('open');}
 
-// ─── VIEW HELPERS ─────────────────────────────────────────────────
-function showView(id) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+// ── VIEW ──
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const inReader = id === 'view-reader';
-  const inSeries = id === 'view-series';
-  document.getElementById('topbar').style.display = inReader ? 'none' : 'flex';
-  document.getElementById('sort-btn').style.display = (inSeries || inReader) ? 'none' : 'flex';
-  if (inSeries) {
-    document.getElementById('topbar-title').textContent = 'DARREN SHAN';
-    document.getElementById('topbar-sub').textContent  = 'Select a Series';
+  const inReader=id==='view-reader';
+  const inSeries=id==='view-series';
+  document.getElementById('topbar').style.display=inReader?'none':'flex';
+  document.getElementById('sort-btn').style.display=(inSeries||inReader)?'none':'flex';
+  if(inSeries){
+    document.getElementById('topbar-title').textContent='DARREN SHAN';
+    document.getElementById('topbar-sub').textContent=' Select a Series';
   }
 }
-function showLoading(m) { document.getElementById('loading-label').textContent=m; document.getElementById('loading').classList.remove('hidden'); }
-function hideLoading()  { document.getElementById('loading').classList.add('hidden'); }
+
+document.getElementById('topbar-logo').addEventListener('click',()=>{
+  if(document.getElementById('view-library').classList.contains('active')) showView('view-series');
+});
+
+window.addEventListener('popstate',()=>{
+  if(document.getElementById('view-reader').classList.contains('active')) document.getElementById('back-btn').click();
+  else if(document.getElementById('view-library').classList.contains('active')) showView('view-series');
+});
+
+// ── HELPERS ──
+function showLoading(m){document.getElementById('loading-label').textContent=m;document.getElementById('loading').classList.remove('hidden');}
+function hideLoading(){document.getElementById('loading').classList.add('hidden');}
 let toastT;
-function toast(m) { const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),3000); }
+function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),3000);}
 
-// ─── BACK NAVIGATION ──────────────────────────────────────────────
-// In reader → back to library; in library → back to series home
-window.addEventListener('popstate', () => {
-  const readerActive = document.getElementById('view-reader').classList.contains('active');
-  const libraryActive = document.getElementById('view-library').classList.contains('active');
-  if (readerActive) document.getElementById('back-btn').click();
-  else if (libraryActive) { showView('view-series'); }
-});
-
-// Also make the topbar logo clickable to go back to series home from library
-document.getElementById('topbar-logo').addEventListener('click', () => {
-  if (document.getElementById('view-library').classList.contains('active')) {
-    showView('view-series');
-  }
-});
-
-// ─── INIT ─────────────────────────────────────────────────────────
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 buildTintPicker();
 buildSeriesHome();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
