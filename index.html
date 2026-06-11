@@ -383,7 +383,7 @@ function loadSeriesMosaics() {
 function enterSeries(id) {
   currentSeries = SERIES[id];
   currentTint = localStorage.getItem(currentSeries.tintKey) || 'normal';
-  setPageBg(currentTint);
+  setPageBg(currentTint, false);
   loadState();
   sortAlpha = false;
 
@@ -492,7 +492,7 @@ async function openBook(id, jumpTo) {
   const book = currentSeries.catalogue.find(b => b.id === id);
   if (!book) return;
   currentBook = book;
-  setPageBg(currentTint);
+  setPageBg(currentTint, true);
   applyTintAll();
   showView('view-reader');
   document.getElementById('reader-title').textContent = `${book.num}. ${book.title}`;
@@ -930,6 +930,7 @@ document.getElementById('back-btn').addEventListener('click', () => {
   document.getElementById('lock-icon-on') .style.display = 'none';
   document.getElementById('scroll-lock-btn').classList.remove('lock-on');
   document.getElementById('view-reader').classList.remove('immersive');
+  setPageBg(currentTint, false);
   showView('view-library');
   renderLibrary();
 });
@@ -948,8 +949,8 @@ const TINT_BG = {
   green:  '#c8d8b8',
 };
 
-function setPageBg(tintId) {
-  const bg = TINT_BG[tintId] || '#000';
+function setPageBg(tintId, inReader) {
+  const bg = inReader ? (TINT_BG[tintId] || '#000') : '#000';
   document.documentElement.style.setProperty('--page-bg', bg);
 }
 
@@ -962,9 +963,7 @@ function applyTintAll() {
   if (cls) reader.classList.add(cls);
   // Still set canvas class for compatibility but filter is now on the container
   document.querySelectorAll('.page-slot canvas').forEach(c => { c.className = cls; });
-  setPageBg(currentTint);
-}
-function buildTintPicker() {
+  setPageBg(currentTint, true); {
   const grid = document.getElementById('tint-grid');
   TINTS.forEach(t => {
     const btn = document.createElement('button');
