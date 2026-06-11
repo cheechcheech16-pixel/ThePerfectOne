@@ -2,7 +2,7 @@
   "name": "Zom-B Series",
   "short_name": "Zom-B",
   "description": "The complete Zom-B series by Darren Shan.",
-  "start_url": "/index.html",
+  "start_url": "/ThePerfectOne/index.html",
   "display": "standalone",
   "background_color": "#0f0e11",
   "theme_color": "#c8903a",
