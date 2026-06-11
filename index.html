@@ -633,39 +633,32 @@ async function gotoPage(n) {
 }
 
 // ─── SWIPE ────────────────────────────────────────────────────────
-// Smooth because the neighbour page is already rendered — we just move it.
+// ALL page flips are vertical (swipe up = next, swipe down = prev). Always.
 // navLocked prevents double-fires during the spring-back animation.
-let ty0=0, tx0=0, dragging=false, axis=null, navLocked=false;
-const SWIPE_MIN  = 72;   // px to commit a turn
-const AXIS_RATIO = 2.0;  // vertical must be 2× horizontal
-const DEADZONE   = 10;   // px before axis is decided
+let ty0=0, tx0=0, dragging=false, navLocked=false;
+const SWIPE_MIN  = 72;   // px to commit a page turn
+const DEADZONE   = 8;    // px before we start tracking
 
 // ─── SCROLL LOCK ──────────────────────────────────────────────────
-// When ON: pinch-zoom disabled, vertical finger drag pans the canvas,
-//          horizontal swipe still changes pages.
-// When OFF: normal free zoom + vertical swipe to change pages.
+// OFF: pinch-zoom freely, vertical swipe flips pages.
+// ON:  pinch-zoom BLOCKED (zoom stays exactly where you set it),
+//      short vertical drag PANS the canvas so you can read cut-off text,
+//      a fast/long swipe past SWIPE_MIN still flips the page.
+//      Swipes are ALWAYS vertical — no horizontal swipes, ever.
 let scrollLockOn = false;
-let panOffsetY = 0;  // current vertical pan amount in px (scroll lock mode)
+let panOffsetY = 0;  // accumulated pan offset (scroll lock mode)
 
 function setScrollLock(on) {
   scrollLockOn = on;
-  const btn = document.getElementById('scroll-lock-btn');
   document.getElementById('lock-icon-off').style.display = on ? 'none'  : 'inline';
   document.getElementById('lock-icon-on') .style.display = on ? 'inline': 'none';
-  btn.classList.toggle('lock-on', on);
-  if (!on) {
-    // Reset any pan offset when unlocking
-    panOffsetY = 0;
-    applyPanOffset();
-  }
-  toast(on ? 'Scroll Lock ON — swipe ↕ to pan, ↔ to flip page' : 'Scroll Lock OFF');
+  document.getElementById('scroll-lock-btn').classList.toggle('lock-on', on);
+  if (!on) { panOffsetY = 0; applyPanOffset(); }
+  toast(on ? 'Lock ON — drag to pan, big swipe to flip page' : 'Lock OFF — pinch to zoom, swipe to flip');
 }
 
 function applyPanOffset() {
-  const cur = slot('cur');
-  if (!cur) return;
-  // Only move the canvas inside, not the whole slot (so slot transitions still work)
-  const canvas = cur.querySelector('canvas');
+  const canvas = slot('cur') && slot('cur').querySelector('canvas');
   if (canvas) canvas.style.transform = scrollLockOn ? `translateY(${panOffsetY}px)` : '';
 }
 
@@ -676,147 +669,55 @@ document.getElementById('scroll-lock-btn').addEventListener('click', e => {
 
 const rc = document.getElementById('reader-content');
 
-// ─── PINCH ZOOM GUARD (scroll lock mode) ──────────────────────────
 rc.addEventListener('touchstart', e => {
-  if (scrollLockOn && e.touches.length >= 2) {
-    e.preventDefault(); // block pinch zoom when locked
-    return;
-  }
+  // Block pinch-zoom when scroll lock is on
+  if (scrollLockOn && e.touches.length >= 2) { e.preventDefault(); return; }
   if (navLocked) return;
-  ty0=e.touches[0].clientY; tx0=e.touches[0].clientX;
-  dragging=false; axis=null;
+  ty0 = e.touches[0].clientY;
+  tx0 = e.touches[0].clientX;
+  dragging = false;
 }, {passive:false});
 
 rc.addEventListener('touchmove', e => {
-  // Always block pinch zoom in scroll lock mode
+  // Always kill pinch in lock mode
   if (scrollLockOn && e.touches.length >= 2) { e.preventDefault(); return; }
-
   if (navLocked) { e.preventDefault(); return; }
 
   const dy = e.touches[0].clientY - ty0;
   const dx = e.touches[0].clientX - tx0;
 
-  if (!axis && (Math.abs(dy)>DEADZONE || Math.abs(dx)>DEADZONE)) {
-    if (scrollLockOn) {
-      // In scroll lock: horizontal = page flip axis, vertical = pan axis
-      axis = Math.abs(dx) > Math.abs(dy) ? 'x-page' : 'y-pan';
-    } else {
-      axis = Math.abs(dy) > Math.abs(dx)*AXIS_RATIO ? 'y' : 'x';
-    }
-  }
+  // Only act on predominantly vertical movement
+  if (Math.abs(dy) < DEADZONE && Math.abs(dragging ? 0 : dy) < DEADZONE) return;
+  if (Math.abs(dx) > Math.abs(dy) * 1.5) return; // ignore if mostly horizontal
 
-  if (scrollLockOn) {
-    if (axis === 'y-pan') {
-      e.preventDefault();
-      dragging = true;
-      // Pan the canvas inside the current slot
-      const canvas = slot('cur') && slot('cur').querySelector('canvas');
-      if (canvas) canvas.style.transform = `translateY(${panOffsetY + dy}px)`;
-      return;
-    } else if (axis === 'x-page') {
-      e.preventDefault();
-      dragging = true;
-      // Slide slots horizontally for page flip preview
-      slot('cur') .style.cssText = `transition:none;transform:translateX(${dx}px)`;
-      slot('next').style.cssText = `transition:none;transform:translateX(calc(100% + ${dx}px))`;
-      slot('prev').style.cssText = `transition:none;transform:translateX(calc(-100% + ${dx}px))`;
-      return;
-    }
-    return; // axis not yet decided — don't prevent default yet
-  }
-
-  // Normal mode: vertical = page flip
-  if (axis !== 'y') return;
   e.preventDefault();
   dragging = true;
-  slot('cur') .style.cssText = `transition:none;transform:translateY(${dy}px)`;
-  slot('next').style.cssText = `transition:none;transform:translateY(calc(100% + ${dy}px))`;
-  slot('prev').style.cssText = `transition:none;transform:translateY(calc(-100% + ${dy}px))`;
+
+  if (scrollLockOn) {
+    // In lock mode: move the canvas inside the slot (pan), NOT the slot itself.
+    // The page-flip decision happens on touchend based on final distance.
+    const canvas = slot('cur') && slot('cur').querySelector('canvas');
+    if (canvas) canvas.style.transform = `translateY(${panOffsetY + dy}px)`;
+  } else {
+    // Normal mode: drag the whole slots (page-flip preview)
+    slot('cur') .style.cssText = `transition:none;transform:translateY(${dy}px)`;
+    slot('next').style.cssText = `transition:none;transform:translateY(calc(100% + ${dy}px))`;
+    slot('prev').style.cssText = `transition:none;transform:translateY(calc(-100% + ${dy}px))`;
+  }
 }, {passive:false});
 
 rc.addEventListener('touchend', e => {
   if (navLocked) return;
 
-  // Check if the tap landed inside #reader-nav — if so, don't toggle immersive
-  const nav = document.getElementById('reader-nav');
   const touch = e.changedTouches[0];
+  const dy = touch.clientY - ty0;
+
+  // Don't toggle immersive if tap was inside the nav bar
+  const nav = document.getElementById('reader-nav');
   const navRect = nav.getBoundingClientRect();
   const inNav = touch.clientX >= navRect.left && touch.clientX <= navRect.right &&
                 touch.clientY >= navRect.top  && touch.clientY <= navRect.bottom;
 
-  const dy = touch.clientY - ty0;
-  const dx = touch.clientX - tx0;
-
-  if (scrollLockOn) {
-    if (!dragging) {
-      // Tap — toggle immersive only if NOT in nav area
-      if (!inNav) toggleImmersive();
-      return;
-    }
-    dragging = false;
-    const TRANSITION = 'transform 0.28s cubic-bezier(0.4,0,0.2,1)';
-    const SPRING     = 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)';
-
-    if (axis === 'y-pan') {
-      // Commit the pan offset
-      panOffsetY += dy;
-      // Clamp so user can't pan wildly beyond the canvas
-      const canvas = slot('cur') && slot('cur').querySelector('canvas');
-      if (canvas) {
-        const maxPan = Math.max(0, canvas.offsetHeight - rc.clientHeight);
-        panOffsetY = Math.max(-maxPan, Math.min(0, panOffsetY));
-        canvas.style.transform = `translateY(${panOffsetY}px)`;
-      }
-      axis = null;
-      return;
-    }
-
-    if (axis === 'x-page') {
-      // Horizontal page flip (mirrored direction: swipe left → next, swipe right → prev)
-      const canNext = currentPage < totalPages;
-      const canPrev = currentPage > 1;
-      if (dx < -SWIPE_MIN && canNext) {
-        navLocked = true;
-        panOffsetY = 0;
-        slot('cur') .style.cssText = `transition:${TRANSITION};transform:translateX(-100%)`;
-        slot('next').style.cssText = `transition:${TRANSITION};transform:translateX(0)`;
-        slot('prev').style.cssText = `transition:none;transform:translateX(-200%)`;
-        setTimeout(() => {
-          navLocked = false;
-          // Rotate slots for horizontal layout
-          const tmp = S.prev; S.prev = S.cur; S.cur = S.next; S.next = tmp;
-          currentPage++;
-          placeSlots(); updateUI(); saveProgress();
-          renderIntoSlot(S.next, currentPage + 1);
-          applyPanOffset();
-        }, 300);
-      } else if (dx > SWIPE_MIN && canPrev) {
-        navLocked = true;
-        panOffsetY = 0;
-        slot('cur') .style.cssText = `transition:${TRANSITION};transform:translateX(100%)`;
-        slot('prev').style.cssText = `transition:${TRANSITION};transform:translateX(0)`;
-        slot('next').style.cssText = `transition:none;transform:translateX(200%)`;
-        setTimeout(() => {
-          navLocked = false;
-          const tmp = S.next; S.next = S.cur; S.cur = S.prev; S.prev = tmp;
-          currentPage--;
-          placeSlots(); updateUI(); saveProgress();
-          renderIntoSlot(S.prev, currentPage - 1);
-          applyPanOffset();
-        }, 300);
-      } else {
-        slot('cur') .style.cssText = `transition:${SPRING};transform:translateX(0)`;
-        slot('next').style.cssText = `transition:${SPRING};transform:translateX(100%)`;
-        slot('prev').style.cssText = `transition:${SPRING};transform:translateX(-100%)`;
-      }
-      axis = null;
-      return;
-    }
-    axis = null;
-    return;
-  }
-
-  // ── Normal mode ──
   if (!dragging) {
     if (!inNav) toggleImmersive();
     return;
@@ -826,42 +727,74 @@ rc.addEventListener('touchend', e => {
   const canNext = currentPage < totalPages;
   const canPrev = currentPage > 1;
   const TRANSITION = 'transform 0.28s cubic-bezier(0.4,0,0.2,1)';
+  const SPRING     = 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)';
 
-  if (dy < -SWIPE_MIN && canNext) {
-    navLocked = true;
-    slot('cur') .style.cssText = `transition:${TRANSITION};transform:translateY(-100%)`;
-    slot('next').style.cssText = `transition:${TRANSITION};transform:translateY(0)`;
-    slot('prev').style.cssText = `transition:none;transform:translateY(-200%)`;
-    setTimeout(() => { navLocked=false; advanceSlots(+1); }, 300);
+  if (scrollLockOn) {
+    // Scroll lock mode: big swipe = page flip, small drag = pan
+    if (dy < -SWIPE_MIN && canNext) {
+      // Page flip forward — reset pan, animate slots normally
+      panOffsetY = 0;
+      applyPanOffset();
+      navLocked = true;
+      slot('cur') .style.cssText = `transition:${TRANSITION};transform:translateY(-100%)`;
+      slot('next').style.cssText = `transition:${TRANSITION};transform:translateY(0)`;
+      slot('prev').style.cssText = `transition:none;transform:translateY(-200%)`;
+      setTimeout(() => { navLocked = false; advanceSlots(+1); }, 300);
 
-  } else if (dy > SWIPE_MIN && canPrev) {
-    navLocked = true;
-    slot('cur') .style.cssText = `transition:${TRANSITION};transform:translateY(100%)`;
-    slot('prev').style.cssText = `transition:${TRANSITION};transform:translateY(0)`;
-    slot('next').style.cssText = `transition:none;transform:translateY(200%)`;
-    setTimeout(() => { navLocked=false; advanceSlots(-1); }, 300);
+    } else if (dy > SWIPE_MIN && canPrev) {
+      // Page flip backward
+      panOffsetY = 0;
+      applyPanOffset();
+      navLocked = true;
+      slot('cur') .style.cssText = `transition:${TRANSITION};transform:translateY(100%)`;
+      slot('prev').style.cssText = `transition:${TRANSITION};transform:translateY(0)`;
+      slot('next').style.cssText = `transition:none;transform:translateY(200%)`;
+      setTimeout(() => { navLocked = false; advanceSlots(-1); }, 300);
+
+    } else {
+      // Short drag = pan — commit the offset, clamp it
+      panOffsetY += dy;
+      const canvas = slot('cur') && slot('cur').querySelector('canvas');
+      if (canvas) {
+        const maxPan = Math.max(0, canvas.offsetHeight - rc.clientHeight);
+        panOffsetY = Math.max(-maxPan, Math.min(0, panOffsetY));
+        canvas.style.transform = `translateY(${panOffsetY}px)`;
+      }
+    }
 
   } else {
-    const SPRING = 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)';
-    slot('cur') .style.cssText = `transition:${SPRING};transform:translateY(0)`;
-    slot('next').style.cssText = `transition:${SPRING};transform:translateY(100%)`;
-    slot('prev').style.cssText = `transition:${SPRING};transform:translateY(-100%)`;
+    // Normal mode: vertical swipe flips page
+    if (dy < -SWIPE_MIN && canNext) {
+      navLocked = true;
+      slot('cur') .style.cssText = `transition:${TRANSITION};transform:translateY(-100%)`;
+      slot('next').style.cssText = `transition:${TRANSITION};transform:translateY(0)`;
+      slot('prev').style.cssText = `transition:none;transform:translateY(-200%)`;
+      setTimeout(() => { navLocked=false; advanceSlots(+1); }, 300);
+
+    } else if (dy > SWIPE_MIN && canPrev) {
+      navLocked = true;
+      slot('cur') .style.cssText = `transition:${TRANSITION};transform:translateY(100%)`;
+      slot('prev').style.cssText = `transition:${TRANSITION};transform:translateY(0)`;
+      slot('next').style.cssText = `transition:none;transform:translateY(200%)`;
+      setTimeout(() => { navLocked=false; advanceSlots(-1); }, 300);
+
+    } else {
+      // Didn't go far enough — spring back
+      slot('cur') .style.cssText = `transition:${SPRING};transform:translateY(0)`;
+      slot('next').style.cssText = `transition:${SPRING};transform:translateY(100%)`;
+      slot('prev').style.cssText = `transition:${SPRING};transform:translateY(-100%)`;
+    }
   }
 }, {passive:true});
 
 rc.addEventListener('touchcancel', () => {
   if (navLocked) return;
-  dragging=false; axis=null;
+  dragging = false;
   const SPRING = 'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)';
-  if (scrollLockOn) {
-    slot('cur') .style.cssText = `transition:${SPRING};transform:translateX(0)`;
-    slot('next').style.cssText = `transition:${SPRING};transform:translateX(100%)`;
-    slot('prev').style.cssText = `transition:${SPRING};transform:translateX(-100%)`;
-  } else {
-    slot('cur') .style.cssText = `transition:${SPRING};transform:translateY(0)`;
-    slot('next').style.cssText = `transition:${SPRING};transform:translateY(100%)`;
-    slot('prev').style.cssText = `transition:${SPRING};transform:translateY(-100%)`;
-  }
+  slot('cur') .style.cssText = `transition:${SPRING};transform:translateY(0)`;
+  slot('next').style.cssText = `transition:${SPRING};transform:translateY(100%)`;
+  slot('prev').style.cssText = `transition:${SPRING};transform:translateY(-100%)`;
+  if (scrollLockOn) applyPanOffset();
 }, {passive:true});
 
 // ─── IMMERSIVE ────────────────────────────────────────────────────
