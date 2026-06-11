@@ -19,7 +19,7 @@
 --page-bg:#000;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden}
+html,body{height:100%;width:100%;background:var(--page-bg);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden}
 #app{display:flex;flex-direction:column;height:100dvh}
 
 /* TOPBAR */
@@ -80,8 +80,8 @@ html,body{height:100%;width:100%;background:var(--ink);color:var(--text);font-fa
 #reader-title{flex:1;font-size:.82rem;font-family:'Playfair Display',serif;font-style:italic;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #reader-page-info{font-size:.72rem;color:var(--text-dim);white-space:nowrap;flex-shrink:0}
 #reader-content{flex:1;position:relative;overflow:hidden;background:var(--page-bg)}
-.page-slot{position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px;display:flex;align-items:center;justify-content:center;background:var(--page-bg);transition:transform .32s cubic-bezier(.4,0,.2,1);will-change:transform}
-.page-slot canvas{display:block;max-width:100%;max-height:100%}
+.page-slot{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:var(--page-bg);transition:transform .32s cubic-bezier(.4,0,.2,1);will-change:transform}
+.page-slot canvas{display:block;max-width:100%;max-height:100%;background:var(--page-bg)}
 .tint-sepia {filter:sepia(.7) brightness(.95)}
 .tint-warm  {filter:sepia(.3) saturate(1.2) brightness(1.02)}
 .tint-night {filter:invert(1) hue-rotate(180deg) brightness(.85)}
@@ -492,6 +492,7 @@ async function openBook(id, jumpTo) {
   const book = currentSeries.catalogue.find(b => b.id === id);
   if (!book) return;
   currentBook = book;
+  setPageBg(currentTint);
   showView('view-reader');
   document.getElementById('reader-title').textContent = `${book.num}. ${book.title}`;
   showLoading(`Loading ${book.title}…`);
@@ -583,7 +584,12 @@ async function renderIntoSlot(el, pageNum) {
   canvas.style.width  = Math.round(vp.width  / dpr) + 'px';
   canvas.style.height = Math.round(vp.height / dpr) + 'px';
   canvas.className = tintClass();
-  await page.render({canvasContext: canvas.getContext('2d'), viewport: vp}).promise;
+  // Pre-fill with the page background colour so there's never a white flash
+  // or white gap between pages during swipe animations
+  const ctx2d = canvas.getContext('2d');
+  ctx2d.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--page-bg').trim() || '#000';
+  ctx2d.fillRect(0, 0, canvas.width, canvas.height);
+  await page.render({canvasContext: ctx2d, viewport: vp}).promise;
   el.appendChild(canvas);
   // If lock is on, pre-stamp the current zoom onto this canvas immediately
   // so it never flashes at zoom=1 when it becomes the active slot
