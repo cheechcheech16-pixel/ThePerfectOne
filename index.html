@@ -19,7 +19,7 @@
 --page-bg:#000;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;width:100%;background:var(--page-bg);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden}
+html,body{height:100%;width:100%;background:#000;color:var(--text);font-family:'Inter',sans-serif;overflow:hidden}
 #app{display:flex;flex-direction:column;height:100dvh}
 
 /* TOPBAR */
@@ -958,7 +958,7 @@ function applyTintAll() {
   const cls = tintClass();
   // Apply filter class to view-reader so entire reader area (gaps + canvas) gets filtered together
   const reader = document.getElementById('view-reader');
-  TINTS.forEach(t => reader.classList.remove(t.cls));
+  TINTS.forEach(t => { if (t.cls) reader.classList.remove(t.cls); });
   if (cls) reader.classList.add(cls);
   // Still set canvas class for compatibility but filter is now on the container
   document.querySelectorAll('.page-slot canvas').forEach(c => { c.className = cls; });
