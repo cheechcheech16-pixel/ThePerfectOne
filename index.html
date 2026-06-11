@@ -614,7 +614,11 @@ function advanceSlots(direction) {
   }
   // Snap all slots to their new logical positions instantly (no flash)
   placeSlots();
-  panOffsetY = 0; panOffsetX = 0; zoomLevel = 1; applyTransform();
+  // Lock ON: keep zoom level, just reset pan to top of new page
+  // Lock OFF: full reset
+  if (scrollLockOn) { panOffsetX = 0; panOffsetY = 0; }
+  else              { panOffsetX = 0; panOffsetY = 0; zoomLevel = 1; }
+  applyTransform();
   updateUI(); saveProgress();
   // Render the newly-far slot in the background
   if (direction === 1) renderIntoSlot(S.next, currentPage + 1);
@@ -625,7 +629,8 @@ function advanceSlots(direction) {
 async function gotoPage(n) {
   n = Math.max(1, Math.min(n, totalPages));
   currentPage = n;
-  panOffsetY = 0; panOffsetX = 0; zoomLevel = 1;
+  panOffsetX = 0; panOffsetY = 0;
+  if (!scrollLockOn) zoomLevel = 1;
   await renderIntoSlot(slot('cur'), n);
   placeSlots();
   updateUI(); saveProgress();
@@ -827,7 +832,7 @@ rc.addEventListener('touchend', e => {
   if (scrollLockOn) {
     // Big swipe = page flip (pan is already committed incrementally above)
     if (dy < -SWIPE_MIN && canNext) {
-      zoomLevel = 1; panOffsetX = 0; panOffsetY = 0; applyTransform();
+      panOffsetX = 0; panOffsetY = 0; applyTransform();
       navLocked = true;
       slot('cur') .style.cssText = `transition:${TRANSITION};transform:translateY(-100%)`;
       slot('next').style.cssText = `transition:${TRANSITION};transform:translateY(0)`;
@@ -835,7 +840,7 @@ rc.addEventListener('touchend', e => {
       setTimeout(() => { navLocked = false; advanceSlots(+1); }, 300);
 
     } else if (dy > SWIPE_MIN && canPrev) {
-      zoomLevel = 1; panOffsetX = 0; panOffsetY = 0; applyTransform();
+      panOffsetX = 0; panOffsetY = 0; applyTransform();
       navLocked = true;
       slot('cur') .style.cssText = `transition:${TRANSITION};transform:translateY(100%)`;
       slot('prev').style.cssText = `transition:${TRANSITION};transform:translateY(0)`;
