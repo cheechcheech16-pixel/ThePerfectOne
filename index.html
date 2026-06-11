@@ -582,6 +582,13 @@ async function renderIntoSlot(el, pageNum) {
   canvas.className = tintClass();
   await page.render({canvasContext: canvas.getContext('2d'), viewport: vp}).promise;
   el.appendChild(canvas);
+  // If lock is on, pre-stamp the current zoom onto this canvas immediately
+  // so it never flashes at zoom=1 when it becomes the active slot
+  if (scrollLockOn && (zoomLevel !== 1 || panOffsetX !== 0 || panOffsetY !== 0)) {
+    canvas.style.transformOrigin = '50% 50%';
+    canvas.style.transform = `translate(${panOffsetX}px, 0px) scale(${zoomLevel})`;
+    // Note: panOffsetY is reset to 0 per page, so new pages always start at top
+  }
 }
 
 // Called once on book open — render cur + both neighbours, then place
@@ -678,8 +685,10 @@ document.getElementById('scroll-lock-btn').addEventListener('click', e => {
   setScrollLock(!scrollLockOn);
 });
 
-function applyTransform() {
-  const canvas = slot('cur') && slot('cur').querySelector('canvas');
+// Apply zoom+pan transform to a specific slot's canvas (defaults to cur)
+function applyTransform(targetSlot) {
+  const s = targetSlot || slot('cur');
+  const canvas = s && s.querySelector('canvas');
   if (!canvas) return;
   if (zoomLevel === 1 && panOffsetX === 0 && panOffsetY === 0) {
     canvas.style.transform = '';
@@ -824,27 +833,32 @@ rc.addEventListener('touchend', e => {
 
   if (totalDy < -SWIPE_MIN && canNext) {
     // Swipe up → next page
-    if (scrollLockOn) { panOffsetX=0; panOffsetY=0; applyTransform(); }
+    // Pre-apply zoom to incoming slot so it appears at the right zoom from frame 1
+    panOffsetX = 0; panOffsetY = 0;
+    applyTransform(slot('next'));
+    if (scrollLockOn) applyTransform(slot('cur'));
     navLocked = true;
     slot('cur') .style.cssText = `transition:${T};transform:translateY(-100%)`;
     slot('next').style.cssText = `transition:${T};transform:translateY(0)`;
     slot('prev').style.cssText = `transition:none;transform:translateY(-200%)`;
     setTimeout(() => {
       navLocked = false;
-      if (!scrollLockOn) resetTransform(); else { panOffsetX=0; panOffsetY=0; applyTransform(); }
+      if (!scrollLockOn) resetTransform();
       advanceSlots(+1);
     }, 280);
 
   } else if (totalDy > SWIPE_MIN && canPrev) {
     // Swipe down → prev page
-    if (scrollLockOn) { panOffsetX=0; panOffsetY=0; applyTransform(); }
+    panOffsetX = 0; panOffsetY = 0;
+    applyTransform(slot('prev'));
+    if (scrollLockOn) applyTransform(slot('cur'));
     navLocked = true;
     slot('cur') .style.cssText = `transition:${T};transform:translateY(100%)`;
     slot('prev').style.cssText = `transition:${T};transform:translateY(0)`;
     slot('next').style.cssText = `transition:none;transform:translateY(200%)`;
     setTimeout(() => {
       navLocked = false;
-      if (!scrollLockOn) resetTransform(); else { panOffsetX=0; panOffsetY=0; applyTransform(); }
+      if (!scrollLockOn) resetTransform();
       advanceSlots(-1);
     }, 280);
 
