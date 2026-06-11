@@ -963,7 +963,9 @@ function applyTintAll() {
   if (cls) reader.classList.add(cls);
   // Still set canvas class for compatibility but filter is now on the container
   document.querySelectorAll('.page-slot canvas').forEach(c => { c.className = cls; });
-  setPageBg(currentTint, true); {
+  setPageBg(currentTint, true);
+}
+function buildTintPicker() {
   const grid = document.getElementById('tint-grid');
   TINTS.forEach(t => {
     const btn = document.createElement('button');
