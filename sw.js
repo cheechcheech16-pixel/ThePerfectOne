@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zomb-v3';
+const CACHE_NAME = 'zomb-v4';
 const CORE_ASSETS = [
   '/ThePerfectOne/index.html',
   '/ThePerfectOne/manifest.json',

@@ -1,6 +1,6 @@
 {
-  "name": "Zom-B Series",
-  "short_name": "Zom-B",
+  "name": "E-Book Reader",
+  "short_name": "E-Reader",
   "description": "The complete Zom-B series by Darren Shan.",
   "start_url": "./index.html",
   "scope": "./",
