@@ -16,15 +16,10 @@
 --ink:#0f0e11;--ink2:#1a1820;--ink3:#26232e;--border:#332f3d;
 --amber:#c8903a;--amber-dim:#8a5f20;--amber-glow:#fbbf60;
 --text:#e8e0d0;--text-dim:#9e96a8;--blood2:#c0392b;
---page-bg:#000;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;width:100%;background:#000;color:var(--text);font-family:'Inter',sans-serif;overflow:hidden}
 #app{display:flex;flex-direction:column;height:100dvh}
-/* When reader is active, paint the whole viewport with page-bg so nothing
-   bleeds through the tint filter — the filter lives on #view-reader which
-   covers the full screen, so its background must match the page colour. */
-#view-reader{background:var(--page-bg) !important}
 
 /* TOPBAR */
 #topbar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--ink2);border-bottom:1px solid var(--border);flex-shrink:0}
@@ -79,20 +74,20 @@ html,body{height:100%;width:100%;background:#000;color:var(--text);font-family:'
 .book-progress-fill{height:100%;background:var(--blood2);border-radius:1px;transition:width .4s}
 
 /* READER */
-/* #view-reader background is set via JS setPageBg() + the rule above */
-#reader-topbar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:transparent;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;min-height:52px;transition:transform .28s ease,opacity .28s ease;position:relative;z-index:30}
+#view-reader{background:#000 !important}
+#reader-topbar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#000;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;min-height:52px;transition:transform .28s ease,opacity .28s ease;position:relative;z-index:30}
 #reader-title{flex:1;font-size:.82rem;font-family:'Playfair Display',serif;font-style:italic;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #reader-page-info{font-size:.72rem;color:var(--text-dim);white-space:nowrap;flex-shrink:0}
-#reader-content{flex:1;position:relative;overflow:hidden;background:transparent}
-.page-slot{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:transparent;transition:transform .32s cubic-bezier(.4,0,.2,1);will-change:transform}
+#reader-content{flex:1;position:relative;overflow:hidden;background:#000}
+.page-slot{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:#000;transition:transform .32s cubic-bezier(.4,0,.2,1);will-change:transform}
 .page-slot canvas{display:block;max-width:100%;max-height:100%;background:transparent}
-.tint-sepia #view-reader{filter:sepia(.7) brightness(.95)}
-.tint-warm  #view-reader{filter:sepia(.3) saturate(1.2) brightness(1.02)}
-.tint-night #view-reader{filter:invert(1) hue-rotate(180deg) brightness(.85)}
-.tint-cool  #view-reader{filter:hue-rotate(20deg) brightness(.9) saturate(.8)}
-.tint-hicon #view-reader{filter:contrast(1.3) brightness(1.05)}
-.tint-green #view-reader{filter:sepia(.4) hue-rotate(90deg) brightness(.9)}
-#reader-nav{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.92) 45%);padding:24px 14px 14px;display:flex;align-items:center;gap:8px;z-index:20;transition:transform .28s ease,opacity .28s ease}
+.tint-sepia #reader-content{filter:sepia(.7) brightness(.95)}
+.tint-warm  #reader-content{filter:sepia(.3) saturate(1.2) brightness(1.02)}
+.tint-night #reader-content{filter:invert(1) hue-rotate(180deg) brightness(.85)}
+.tint-cool  #reader-content{filter:hue-rotate(20deg) brightness(.9) saturate(.8)}
+.tint-hicon #reader-content{filter:contrast(1.3) brightness(1.05)}
+.tint-green #reader-content{filter:sepia(.4) hue-rotate(90deg) brightness(.9)}
+#reader-nav{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000 45%);padding:24px 14px 14px;display:flex;align-items:center;gap:8px;z-index:20;transition:transform .28s ease,opacity .28s ease}
 .nav-btn{background:rgba(38,35,46,.92);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:8px;cursor:pointer;font-size:.82rem;display:flex;align-items:center;gap:5px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .nav-btn:active{background:var(--border)}
 .nav-btn:disabled{opacity:.3;pointer-events:none}
@@ -387,7 +382,6 @@ function loadSeriesMosaics() {
 function enterSeries(id) {
   currentSeries = SERIES[id];
   currentTint = localStorage.getItem(currentSeries.tintKey) || 'normal';
-  setPageBg(currentTint);
   loadState();
   sortAlpha = false;
 
@@ -496,7 +490,6 @@ async function openBook(id, jumpTo) {
   const book = currentSeries.catalogue.find(b => b.id === id);
   if (!book) return;
   currentBook = book;
-  setPageBg(currentTint);
   applyTintAll();
   showView('view-reader');
   document.getElementById('reader-title').textContent = `${book.num}. ${book.title}`;
@@ -942,31 +935,15 @@ document.getElementById('back-btn').addEventListener('click', () => {
 // Background colours that match each tint so the area around the canvas
 // (including the gap left by the sliding topbar in immersive mode) always
 // looks like the page, not a random grey or black.
-const TINT_BG = {
-  normal: '#f5f5f0',
-  sepia:  '#e8d5b0',
-  warm:   '#f5e8d0',
-  night:  '#f5f5f0',  // inverted by the night filter → near-black, matching page content
-  cool:   '#c8d8e8',
-  hicon:  '#ffffff',
-  green:  '#c8d8b8',
-};
-
-function setPageBg(tintId) {
-  const bg = TINT_BG[tintId] || '#000';
-  document.documentElement.style.setProperty('--page-bg', bg);
-}
-
 function tintClass() { return (TINTS.find(t => t.id === currentTint) || TINTS[0]).cls; }
 function applyTintAll() {
   const cls = tintClass();
   // Remove all tint classes from the html element
   TINTS.forEach(t => { if (t.cls) document.documentElement.classList.remove(t.cls); });
-  // Add the active tint class to html so `.tint-X #view-reader` CSS selectors fire
+  // Add the active tint class to html so `.tint-X #reader-content` CSS selectors fire
   if (cls) document.documentElement.classList.add(cls);
   // Keep canvas class for any canvas-level fallback
   document.querySelectorAll('.page-slot canvas').forEach(c => { c.className = cls; });
-  setPageBg(currentTint);
 }
 function buildTintPicker() {
   const grid = document.getElementById('tint-grid');
