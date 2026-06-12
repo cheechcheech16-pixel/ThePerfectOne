@@ -1,7 +1,7 @@
 const CACHE_NAME = 'zomb-v2';
 const CORE_ASSETS = [
-  'index.html',
-  'manifest.json',
+  '/ThePerfectOne/index.html',
+  '/ThePerfectOne/manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
 ];
@@ -29,7 +29,7 @@ self.addEventListener('fetch', e => {
       return fetch(e.request).then(res => {
         if (!res || res.status !== 200 || res.type === 'opaque') return res;
         const url = e.request.url;
-        if (url.includes('/books/') || CORE_ASSETS.some(a => url.includes(a))) {
+        if (url.includes('/books/') || url.includes('/demonata/') || CORE_ASSETS.some(a => url.includes(a))) {
           const clone = res.clone();
           caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
         }
