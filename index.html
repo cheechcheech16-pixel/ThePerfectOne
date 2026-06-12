@@ -51,10 +51,6 @@ html,body{height:100%;width:100%;background:#000;overscroll-behavior:none;color:
 .series-sub{font-size:.65rem;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;margin-top:4px}
 .series-count{display:inline-block;margin-top:8px;font-size:.62rem;font-weight:500;letter-spacing:.08em;padding:3px 8px;border-radius:20px;background:rgba(200,144,58,.2);color:var(--amber);border:1px solid rgba(200,144,58,.3)}
 
-/* Series card — reading progress bar along the bottom */
-.series-progress-bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.08);z-index:3}
-.series-progress-fill{height:100%;border-radius:0 2px 0 0;transition:width .4s;background:var(--series-accent,#c0392b)}
-
 /* Series card — "currently reading" pill */
 .series-reading-badge{position:absolute;top:10px;right:10px;z-index:4;font-size:.55rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:20px;background:rgba(15,14,17,.75);color:var(--amber-glow);border:1px solid rgba(200,144,58,.5);backdrop-filter:blur(4px);line-height:1.4}
 
@@ -454,39 +450,30 @@ function saveState() {
 
 // ─── SERIES HOME ──────────────────────────────────────────────────
 function getSeriesReadingInfo(s) {
-  // Returns {pct, currentBookTitle} based on stored progress for this series
+  // Returns {currentBookTitle} for the series card "currently reading" badge
   try {
     const raw = localStorage.getItem(s.storeKey);
-    if (!raw) return {pct:0, currentBookTitle:null};
+    if (!raw) return {currentBookTitle:null};
     const data = JSON.parse(raw);
-    const progress = data.progress || {};
-    const totals   = data.totals   || {};
-    // Find the book with a bookmark, else the one most recently progressed
+    const progress  = data.progress  || {};
+    const totals    = data.totals    || {};
     const bookmarks = data.bookmarks || {};
     let bestId = null, bestPage = 0;
     // Priority: bookmarked book first
     const bmIds = Object.keys(bookmarks);
     if (bmIds.length) bestId = bmIds[0];
-    // Otherwise highest progress page that isn't 100% finished
+    // Otherwise highest progress that isn't 100% finished
     if (!bestId) {
       s.catalogue.forEach(b => {
-        const pg = progress[b.id] || 0;
-        const tot = totals[b.id] || 0;
-        const pct = tot ? pg/tot : 0;
+        const pg  = progress[b.id] || 0;
+        const tot = totals[b.id]   || 0;
+        const pct = tot ? pg / tot : 0;
         if (pg > bestPage && pct < 0.99) { bestPage = pg; bestId = b.id; }
       });
     }
-    // Overall series completion %
-    let totalPages = 0, readPages = 0;
-    s.catalogue.forEach(b => {
-      const tot = totals[b.id] || 0;
-      const pg  = Math.min(progress[b.id] || 0, tot);
-      totalPages += tot; readPages += pg;
-    });
-    const pct = totalPages ? Math.round(readPages / totalPages * 100) : 0;
-    const currentBookTitle = bestId ? (s.catalogue.find(b => b.id === bestId)||{}).title||null : null;
-    return {pct, currentBookTitle};
-  } catch(e) { return {pct:0, currentBookTitle:null}; }
+    const currentBookTitle = bestId ? (s.catalogue.find(b => b.id === bestId) || {}).title || null : null;
+    return {currentBookTitle};
+  } catch(e) { return {currentBookTitle:null}; }
 }
 
 function buildSeriesHome() {
@@ -508,12 +495,9 @@ function buildSeriesHome() {
       bg.appendChild(tile);
     }
 
-    const {pct, currentBookTitle} = getSeriesReadingInfo(s);
+    const {pct: _pct, currentBookTitle} = getSeriesReadingInfo(s);
     const readingBadge = currentBookTitle
       ? `<div class="series-reading-badge">Reading: ${currentBookTitle}</div>`
-      : '';
-    const progressBar = pct > 0
-      ? `<div class="series-progress-bar"><div class="series-progress-fill" style="width:${pct}%;background:${s.accent}"></div></div>`
       : '';
 
     card.innerHTML = `
@@ -523,8 +507,7 @@ function buildSeriesHome() {
         <div class="series-name">${s.name}</div>
         <div class="series-sub">${s.sub}</div>
         <div class="series-count">${s.catalogue.length} Books</div>
-      </div>
-      ${progressBar}`;
+      </div>`;
     card.insertBefore(bg, card.firstChild);
     card.addEventListener('click', () => enterSeries(s.id));
     grid.appendChild(card);
