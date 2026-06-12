@@ -7,8 +7,8 @@
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Darren Shan">
-<title>Darren Shan</title>
+<meta name="apple-mobile-web-app-title" content="My Library">
+<title>My Library</title>
 <link rel="manifest" href="manifest.json">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Inter:wght@300;400;500&display=swap');
@@ -157,7 +157,7 @@ html,body{height:100%;width:100%;background:#000;overscroll-behavior:none;color:
 <div id="app">
 
   <div id="topbar">
-    <div id="topbar-logo"><span id="topbar-title">DARREN SHAN</span> <span id="topbar-sub">Select a Series</span></div>
+    <div id="topbar-logo"><span id="topbar-title">MY LIBRARY</span> <span id="topbar-sub"></span></div>
     <button class="icon-btn" id="sort-btn" aria-label="Sort" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
     </button>
@@ -166,7 +166,7 @@ html,body{height:100%;width:100%;background:#000;overscroll-behavior:none;color:
   <!-- ── SERIES HOME ── -->
   <div class="view active" id="view-series">
     <div id="series-scroll">
-      <p class="series-label">Choose a Series</p>
+      <p class="series-label">Your Library</p>
       <div class="series-grid" id="series-grid"></div>
     </div>
   </div>
@@ -252,8 +252,7 @@ const SERIES = {
   zomb: {
     id: 'zomb',
     name: 'Zom-B',
-    sub: 'Darren Shan',
-    bookFolder: 'books',
+    sub: 'Darren Shan',  // author — shown on series card
     coversVar: 'BOOK_COVERS',
     coversFile: 'books/covers.js',
     storeKey: 'zomb_data_v2',
@@ -418,7 +417,7 @@ function enterSeries(id) {
   r.setProperty('--accent-glow',currentSeries.accentGlow);
 
   document.getElementById('topbar-title').textContent = currentSeries.name.toUpperCase();
-  document.getElementById('topbar-sub').textContent = currentSeries.sub + ' · Complete Series';
+  document.getElementById('topbar-sub').textContent = 'Complete Series';
   document.getElementById('sort-btn').style.display = 'flex';
   document.getElementById('library-label').textContent = 'Complete Series';
 
@@ -1013,8 +1012,8 @@ function showView(id) {
   document.getElementById('topbar').style.display = inReader ? 'none' : 'flex';
   document.getElementById('sort-btn').style.display = (inSeries || inReader) ? 'none' : 'flex';
   if (inSeries) {
-    document.getElementById('topbar-title').textContent = 'DARREN SHAN';
-    document.getElementById('topbar-sub').textContent  = 'Select a Series';
+    document.getElementById('topbar-title').textContent = 'MY LIBRARY';
+    document.getElementById('topbar-sub').textContent  = '';
   }
 }
 function showLoading(m) { document.getElementById('loading-label').textContent=m; document.getElementById('loading').classList.remove('hidden'); }
