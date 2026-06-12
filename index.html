@@ -51,6 +51,22 @@ html,body{height:100%;width:100%;background:#000;overscroll-behavior:none;color:
 .series-sub{font-size:.65rem;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;margin-top:4px}
 .series-count{display:inline-block;margin-top:8px;font-size:.62rem;font-weight:500;letter-spacing:.08em;padding:3px 8px;border-radius:20px;background:rgba(200,144,58,.2);color:var(--amber);border:1px solid rgba(200,144,58,.3)}
 
+/* Series card — reading progress bar along the bottom */
+.series-progress-bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.08);z-index:3}
+.series-progress-fill{height:100%;border-radius:0 2px 0 0;transition:width .4s;background:var(--series-accent,#c0392b)}
+
+/* Series card — "currently reading" pill */
+.series-reading-badge{position:absolute;top:10px;right:10px;z-index:4;font-size:.55rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:20px;background:rgba(15,14,17,.75);color:var(--amber-glow);border:1px solid rgba(200,144,58,.5);backdrop-filter:blur(4px);line-height:1.4}
+
+/* Featured book card — the one you're furthest into gets a full-width slot */
+.book-card.featured{grid-column:1/-1;flex-direction:row;border-radius:6px}
+.book-card.featured .book-cover{height:140px;width:100px;flex-shrink:0}
+.book-card.featured .book-meta{flex:1;display:flex;flex-direction:column;justify-content:center;padding:12px 14px;background:var(--ink3)}
+.book-card.featured .book-meta-name{font-size:.82rem;color:var(--text);white-space:normal;line-height:1.35;margin-bottom:4px;font-family:'Playfair Display',serif;font-style:italic}
+.book-card.featured .book-meta-label{font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:6px}
+.book-card.featured .book-progress-bar{height:3px;margin-top:8px}
+.book-card.featured .book-pct-text{font-size:.65rem;color:var(--text-dim);margin-top:5px}
+
 /* LIBRARY */
 #library-scroll{flex:1;overflow-y:auto;padding:16px 14px 80px}
 #library-scroll::-webkit-scrollbar{width:3px}
@@ -437,6 +453,42 @@ function saveState() {
 }
 
 // ─── SERIES HOME ──────────────────────────────────────────────────
+function getSeriesReadingInfo(s) {
+  // Returns {pct, currentBookTitle} based on stored progress for this series
+  try {
+    const raw = localStorage.getItem(s.storeKey);
+    if (!raw) return {pct:0, currentBookTitle:null};
+    const data = JSON.parse(raw);
+    const progress = data.progress || {};
+    const totals   = data.totals   || {};
+    // Find the book with a bookmark, else the one most recently progressed
+    const bookmarks = data.bookmarks || {};
+    let bestId = null, bestPage = 0;
+    // Priority: bookmarked book first
+    const bmIds = Object.keys(bookmarks);
+    if (bmIds.length) bestId = bmIds[0];
+    // Otherwise highest progress page that isn't 100% finished
+    if (!bestId) {
+      s.catalogue.forEach(b => {
+        const pg = progress[b.id] || 0;
+        const tot = totals[b.id] || 0;
+        const pct = tot ? pg/tot : 0;
+        if (pg > bestPage && pct < 0.99) { bestPage = pg; bestId = b.id; }
+      });
+    }
+    // Overall series completion %
+    let totalPages = 0, readPages = 0;
+    s.catalogue.forEach(b => {
+      const tot = totals[b.id] || 0;
+      const pg  = Math.min(progress[b.id] || 0, tot);
+      totalPages += tot; readPages += pg;
+    });
+    const pct = totalPages ? Math.round(readPages / totalPages * 100) : 0;
+    const currentBookTitle = bestId ? (s.catalogue.find(b => b.id === bestId)||{}).title||null : null;
+    return {pct, currentBookTitle};
+  } catch(e) { return {pct:0, currentBookTitle:null}; }
+}
+
 function buildSeriesHome() {
   const grid = document.getElementById('series-grid');
   grid.innerHTML = '';
@@ -456,13 +508,23 @@ function buildSeriesHome() {
       bg.appendChild(tile);
     }
 
+    const {pct, currentBookTitle} = getSeriesReadingInfo(s);
+    const readingBadge = currentBookTitle
+      ? `<div class="series-reading-badge">Reading: ${currentBookTitle}</div>`
+      : '';
+    const progressBar = pct > 0
+      ? `<div class="series-progress-bar"><div class="series-progress-fill" style="width:${pct}%;background:${s.accent}"></div></div>`
+      : '';
+
     card.innerHTML = `
+      ${readingBadge}
       <div class="series-overlay"></div>
       <div class="series-info">
         <div class="series-name">${s.name}</div>
         <div class="series-sub">${s.sub}</div>
         <div class="series-count">${s.catalogue.length} Books</div>
-      </div>`;
+      </div>
+      ${progressBar}`;
     card.insertBefore(bg, card.firstChild);
     card.addEventListener('click', () => enterSeries(s.id));
     grid.appendChild(card);
@@ -528,6 +590,21 @@ function renderLibrary() {
   const catalogue = currentSeries.catalogue;
   const list = sortAlpha ? [...catalogue].sort((a,b) => a.title.localeCompare(b.title)) : catalogue;
 
+  // Find the "featured" book — bookmarked one, else furthest in-progress book (not 100% done)
+  let featuredId = null;
+  const bmKeys = Object.keys(state.bookmarks);
+  if (bmKeys.length) {
+    featuredId = bmKeys[0];
+  } else {
+    let bestPct = 0;
+    catalogue.forEach(b => {
+      const pg = state.progress[b.id] || 0;
+      const tot = state.totals[b.id] || 0;
+      const pct = tot ? pg / tot : 0;
+      if (pg > 0 && pct < 0.99 && pct > bestPct) { bestPct = pct; featuredId = b.id; }
+    });
+  }
+
   list.forEach(book => {
     const [c1,c2] = currentSeries.spineColors[parseInt(book.id)-1] || currentSeries.spineColors[0];
     const hasBm = state.bookmarks[book.id] != null;
@@ -538,25 +615,49 @@ function renderLibrary() {
     const covers = window[currentSeries.coversVar];
     const coverUrl = (covers && covers[book.id]) || '';
 
+    const isFeatured = !sortAlpha && book.id === featuredId && pct > 0;
+
     const card = document.createElement('div');
-    card.className = 'book-card';
+    card.className = 'book-card' + (isFeatured ? ' featured' : '');
     card.dataset.id = book.id;
-    card.innerHTML = `
-      <div class="book-cover" style="background:linear-gradient(155deg,${c1},${c2})">
-        ${coverUrl ? `<img class="cover-img" src="${coverUrl}" alt="" loading="lazy">` : ''}
-        <div class="cover-spine">
-          <div class="spine-inner">
-            <div class="book-num">Book ${book.num}</div>
-            <div class="book-title-spine">${book.title}</div>
+
+    if (isFeatured) {
+      card.innerHTML = `
+        <div class="book-cover" style="background:linear-gradient(155deg,${c1},${c2})">
+          ${coverUrl ? `<img class="cover-img" src="${coverUrl}" alt="" loading="lazy">` : ''}
+          <div class="cover-spine">
+            <div class="spine-inner">
+              <div class="book-num">Book ${book.num}</div>
+              <div class="book-title-spine">${book.title}</div>
+            </div>
           </div>
+          ${book.novella ? '<div class="novella-flag">Novella</div>' : ''}
+          ${hasBm ? '<div class="bookmark-dot"></div>' : ''}
         </div>
-        ${book.novella ? '<div class="novella-flag">Novella</div>' : ''}
-        ${hasBm ? '<div class="bookmark-dot"></div>' : ''}
-      </div>
-      <div class="book-meta">
-        <div class="book-meta-name">${book.title}</div>
-        <div class="book-progress-bar"><div class="book-progress-fill" style="width:${pct}%"></div></div>
-      </div>`;
+        <div class="book-meta">
+          <div class="book-meta-label">Currently Reading</div>
+          <div class="book-meta-name">${book.title}</div>
+          <div class="book-progress-bar"><div class="book-progress-fill" style="width:${pct}%"></div></div>
+          <div class="book-pct-text">${pct}% complete</div>
+        </div>`;
+    } else {
+      card.innerHTML = `
+        <div class="book-cover" style="background:linear-gradient(155deg,${c1},${c2})">
+          ${coverUrl ? `<img class="cover-img" src="${coverUrl}" alt="" loading="lazy">` : ''}
+          <div class="cover-spine">
+            <div class="spine-inner">
+              <div class="book-num">Book ${book.num}</div>
+              <div class="book-title-spine">${book.title}</div>
+            </div>
+          </div>
+          ${book.novella ? '<div class="novella-flag">Novella</div>' : ''}
+          ${hasBm ? '<div class="bookmark-dot"></div>' : ''}
+        </div>
+        <div class="book-meta">
+          <div class="book-meta-name">${book.title}</div>
+          <div class="book-progress-bar"><div class="book-progress-fill" style="width:${pct}%"></div></div>
+        </div>`;
+    }
 
     const img = card.querySelector('.cover-img');
     if (img) {
@@ -1119,12 +1220,13 @@ window.addEventListener('popstate', () => {
   const readerActive = document.getElementById('view-reader').classList.contains('active');
   const libraryActive = document.getElementById('view-library').classList.contains('active');
   if (readerActive) document.getElementById('back-btn').click();
-  else if (libraryActive) { showView('view-series'); }
+  else if (libraryActive) { buildSeriesHome(); showView('view-series'); }
 });
 
 // Also make the topbar logo clickable to go back to series home from library
 document.getElementById('topbar-logo').addEventListener('click', () => {
   if (document.getElementById('view-library').classList.contains('active')) {
+    buildSeriesHome();
     showView('view-series');
   }
 });
