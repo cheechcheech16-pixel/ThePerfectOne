@@ -1198,19 +1198,40 @@ document.getElementById('back-btn').addEventListener('click', () => {
 });
 
 // ─── TTS ──────────────────────────────────────────────────────────
-let ttsSpeaking = false;
-let ttsPaused   = false;
-let ttsVoices   = [];
-let ttsVoiceIdx = 0;
-let ttsRate     = 1.0;
-let _ttsUtt     = null;
+let ttsSpeaking     = false;
+let ttsPaused       = false;
+let ttsVoices       = [];
+let ttsVoiceIdx     = 0;
+let ttsRate         = 1.0;
+let _ttsUtt         = null;
+let _ttsRateTimer   = null;
+
+// Score voices so cloud/neural ones sort above robotic offline ones.
+// Google > other network > enhanced local > basic local
+function ttsVoiceScore(v) {
+  const n = v.name.toLowerCase();
+  if (n.includes('google'))                            return 4;
+  if (!v.localService)                                 return 3; // other cloud voices
+  if (n.includes('enhanced') || n.includes('premium')) return 2;
+  return 1;
+}
+
+// Clean up raw PDF text so TTS doesn't stumble on common artifacts
+function ttsCleanText(raw) {
+  return raw
+    .replace(/(\w)-\s+(\w)/g, '$1$2')    // re-join hyphenated line-breaks
+    .replace(/\f/g, ' ')                  // form-feed characters
+    .replace(/([.!?])([A-Z])/g, '$1 $2') // ensure space after sentence end
+    .replace(/\s+/g, ' ')                 // collapse all whitespace
+    .trim();
+}
 
 async function ttsGetPageText(pageNum) {
   if (!pdfDoc || pageNum < 1 || pageNum > totalPages) return '';
   try {
     const page    = await pdfDoc.getPage(pageNum);
     const content = await page.getTextContent();
-    return content.items.map(i => i.str).join(' ').replace(/\s+/g, ' ').trim();
+    return ttsCleanText(content.items.map(i => i.str).join(' '));
   } catch(e) { return ''; }
 }
 
@@ -1289,16 +1310,26 @@ function buildVoicePicker() {
     list.innerHTML = '<p style="font-size:.75rem;color:var(--text-dim);padding:8px 4px">No voices available on this device</p>';
     return;
   }
+  // Hint shown when natural-sounding cloud voices are present
+  const hasCloud = ttsVoices.some(v => ttsVoiceScore(v) >= 3);
+  if (hasCloud) {
+    const hint = document.createElement('p');
+    hint.style.cssText = 'font-size:.62rem;color:var(--text-dim);padding:0 2px 10px;line-height:1.5';
+    hint.innerHTML = '<span style="color:var(--amber)">✦</span> = cloud voice — sounds more natural';
+    list.appendChild(hint);
+  }
   ttsVoices.forEach((v, i) => {
+    const score  = ttsVoiceScore(v);
+    const badge  = score >= 3 ? ' <span style="color:var(--amber);font-size:.6rem">✦</span>' : '';
     const btn = document.createElement('button');
     btn.className = 'tts-voice-btn' + (i === ttsVoiceIdx ? ' active' : '');
     btn.dataset.idx = i;
-    btn.innerHTML = `<span>${v.name}</span><span class="tts-voice-lang">${v.lang}</span>`;
+    btn.innerHTML = `<span>${v.name}${badge}</span><span class="tts-voice-lang">${v.lang}</span>`;
     btn.addEventListener('click', () => {
       ttsVoiceIdx = i;
       document.querySelectorAll('.tts-voice-btn').forEach(b =>
         b.classList.toggle('active', +b.dataset.idx === i));
-      // Restart with new voice if currently speaking
+      // Seamlessly restart with the new voice
       if (ttsSpeaking || ttsPaused) { ttsStop(); ttsPlayPause(); }
     });
     list.appendChild(btn);
@@ -1307,12 +1338,14 @@ function buildVoicePicker() {
 
 function loadTTSVoices() {
   const all = window.speechSynthesis.getVoices();
-  if (!all.length) return; // not ready yet; voiceschanged will fire
-  const en  = all.filter(v => v.lang.startsWith('en'));
-  ttsVoices = en.length ? en : all;
-  // Prefer first local (offline) voice
-  const localIdx = ttsVoices.findIndex(v => v.localService);
-  if (localIdx !== -1 && ttsVoiceIdx === 0) ttsVoiceIdx = localIdx;
+  if (!all.length) return; // voiceschanged will fire when ready
+  // Show every voice, best-sounding first
+  ttsVoices = [...all].sort((a, b) => ttsVoiceScore(b) - ttsVoiceScore(a));
+  // Auto-select the best available voice on first load
+  if (ttsVoiceIdx === 0) {
+    const bestIdx = ttsVoices.findIndex(v => ttsVoiceScore(v) >= 3);
+    if (bestIdx !== -1) ttsVoiceIdx = bestIdx;
+  }
   buildVoicePicker();
 }
 
@@ -1321,9 +1354,19 @@ if (window.speechSynthesis) {
   loadTTSVoices();
 }
 
+// Rate bakes into the utterance at creation — can't change mid-speech.
+// On slider settle, cancel + restart so the new speed takes effect immediately.
 document.getElementById('tts-rate').addEventListener('input', e => {
   ttsRate = parseFloat(e.target.value);
   document.getElementById('tts-rate-val').textContent = ttsRate + '×';
+  if (ttsSpeaking || ttsPaused) {
+    clearTimeout(_ttsRateTimer);
+    _ttsRateTimer = setTimeout(() => {
+      const wasPlaying = ttsSpeaking && !ttsPaused;
+      ttsStop();
+      if (wasPlaying) ttsPlayPause();
+    }, 500);
+  }
 });
 
 // Topbar TTS button: open panel if idle; toggle play/pause if active
