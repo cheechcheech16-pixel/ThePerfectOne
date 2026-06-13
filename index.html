@@ -1281,7 +1281,12 @@ async function ttsPlayPause() {
   if (!text) { toast('No readable text on this page'); return; }
   window.speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text);
-  if (ttsVoices[ttsVoiceIdx]) utt.voice = ttsVoices[ttsVoiceIdx];
+  // Clamp index in case voices list changed since panel was opened
+  if (ttsVoiceIdx >= ttsVoices.length) ttsVoiceIdx = 0;
+  // Always assign the voice explicitly — without this, mobile browsers fall
+  // back to their default robotic system voice regardless of the picker.
+  const selectedVoice = ttsVoices[ttsVoiceIdx] || null;
+  if (selectedVoice) utt.voice = selectedVoice;
   utt.rate  = ttsRate;
   utt.onstart  = () => { ttsSpeaking = true;  ttsPaused = false; ttsUpdatePlayState(); };
   utt.onend    = () => { ttsSpeaking = false; ttsPaused = false; ttsUpdatePlayState(); };
@@ -1338,14 +1343,34 @@ function buildVoicePicker() {
 
 function loadTTSVoices() {
   const all = window.speechSynthesis.getVoices();
-  if (!all.length) return; // voiceschanged will fire when ready
+  if (!all.length) {
+    // Mobile browsers often return empty on the first call even inside
+    // voiceschanged — retry a few times with a short delay before giving up.
+    if (!loadTTSVoices._retries) loadTTSVoices._retries = 0;
+    if (loadTTSVoices._retries < 8) {
+      loadTTSVoices._retries++;
+      setTimeout(loadTTSVoices, 250);
+    }
+    return;
+  }
+  loadTTSVoices._retries = 0;
+
+  // Remember the name of the currently-selected voice so we can restore it
+  // after the list refreshes (mobile can fire voiceschanged multiple times).
+  const prevName = ttsVoices[ttsVoiceIdx] ? ttsVoices[ttsVoiceIdx].name : null;
+
   // Show every voice, best-sounding first
   ttsVoices = [...all].sort((a, b) => ttsVoiceScore(b) - ttsVoiceScore(a));
-  // Auto-select the best available voice on first load
-  if (ttsVoiceIdx === 0) {
-    const bestIdx = ttsVoices.findIndex(v => ttsVoiceScore(v) >= 3);
-    if (bestIdx !== -1) ttsVoiceIdx = bestIdx;
+
+  // Try to restore the previously chosen voice by name first.
+  // If not found (e.g. first load, or voice disappeared), pick the best one.
+  if (prevName) {
+    const restored = ttsVoices.findIndex(v => v.name === prevName);
+    ttsVoiceIdx = restored !== -1 ? restored : 0;
+  } else {
+    ttsVoiceIdx = 0; // index 0 is already the highest-scored voice after sort
   }
+
   buildVoicePicker();
 }
 
