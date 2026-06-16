@@ -568,6 +568,7 @@ const TINTS = [
 
 // ─── STATE ────────────────────────────────────────────────────────
 let currentSeries = null;
+let currentContext = 'series'; // 'series' or 'standalone'
 let currentTint = 'normal';
 let state = {bookmarks:{}, progress:{}, totals:{}};
 let currentBook = null, pdfDoc = null, currentPage = 1, totalPages = 1;
@@ -683,6 +684,7 @@ function loadSeriesMosaics() {
 function enterSeries(id, sourceMap) {
   const src = sourceMap || SERIES;
   currentSeries = src[id];
+  currentContext = 'series';
   currentTint = localStorage.getItem(currentSeries.tintKey) || 'normal';
   loadState();
   sortAlpha = false;
@@ -1277,8 +1279,13 @@ document.getElementById('back-btn').addEventListener('click', () => {
   document.getElementById('lock-icon-on') .style.display = 'none';
   document.getElementById('scroll-lock-btn').classList.remove('lock-on');
   document.getElementById('view-reader').classList.remove('immersive');
-  showView('view-library');
-  renderLibrary();
+  if (currentContext === 'standalone') {
+    buildBooksView();
+    showView('view-books');
+  } else {
+    showView('view-library');
+    renderLibrary();
+  }
 });
 
 // ─── TTS ──────────────────────────────────────────────────────────
@@ -1571,15 +1578,23 @@ window.addEventListener('popstate', () => {
   const seriesActive  = document.getElementById('view-series').classList.contains('active');
   const booksActive   = document.getElementById('view-books').classList.contains('active');
   if (readerActive)       document.getElementById('back-btn').click();
-  else if (libraryActive) { buildSeriesHome(); showView('view-series'); }
+  else if (libraryActive) {
+    if (currentContext === 'standalone') { buildBooksView(); showView('view-books'); }
+    else { buildSeriesHome(); showView('view-series'); }
+  }
   else if (seriesActive || booksActive) showView('view-home');
 });
 
-// Topbar logo: from library → series home; from series/books → home landing
+// Topbar logo: from library → series home or books list depending on context; from series/books → home landing
 document.getElementById('topbar-logo').addEventListener('click', () => {
   if (document.getElementById('view-library').classList.contains('active')) {
-    buildSeriesHome();
-    showView('view-series');
+    if (currentContext === 'standalone') {
+      buildBooksView();
+      showView('view-books');
+    } else {
+      buildSeriesHome();
+      showView('view-series');
+    }
   } else if (
     document.getElementById('view-series').classList.contains('active') ||
     document.getElementById('view-books').classList.contains('active')
@@ -1711,7 +1726,7 @@ function buildBooksView() {
       <div class="series-info">
         <div class="series-name">${s.name}</div>
         <div class="series-sub">${s.sub}</div>
-        <div class="series-count">${s.catalogue.length} Book${s.catalogue.length !== 1 ? 's' : ''}</div>
+        ${s.catalogue.length > 1 ? `<div class="series-count">${s.catalogue.length} Books</div>` : ''}
       </div>`;
     card.insertBefore(bg, card.firstChild);
     card.addEventListener('click', () => openStandaloneBook(s.id));
@@ -1744,6 +1759,7 @@ function openStandaloneBook(id) {
   const s = STANDALONE_BOOKS[id];
   if (!s) return;
   currentSeries = s;
+  currentContext = 'standalone';
   currentTint = localStorage.getItem(s.tintKey) || 'normal';
   loadState();
   const r = document.documentElement.style;
