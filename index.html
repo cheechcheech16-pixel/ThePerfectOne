@@ -2318,6 +2318,11 @@ function showAudioResumeModal(entry, idx, savedTime, onResume, onRestart) {
 
 // Start playback at a given time (0 = from beginning)
 function startAudioTrack(idx, startTime) {
+  // Save the current track's position before switching away
+  if (audioEl) {
+    audioSaveProgress(currentAudioEntry, currentAudioIdx, audioEl.currentTime);
+    audioEl.pause();
+  }
   currentAudioIdx = idx;
   loadAudioTrack(idx, startTime);
   showView('view-audio-player');
@@ -2330,10 +2335,6 @@ function loadAudioTrack(idx, startTime) {
   const cat = currentAudioEntry.catalogue;
   if (idx < 0 || idx >= cat.length) return;
 
-  // Save progress on the current track before switching
-  if (audioEl && currentAudioIdx !== idx) {
-    audioSaveProgress(currentAudioEntry, currentAudioIdx, audioEl.currentTime);
-  }
   currentAudioIdx = idx;
   const book = cat[idx];
 
@@ -2346,7 +2347,7 @@ function loadAudioTrack(idx, startTime) {
   audioEl = new Audio();
   audioEl.preload = 'metadata';
 
-  // Build src — for series, individual book subfolder; for standalone, root folder
+  // Build src
   const isMulti = cat.length > 1;
   if (isMulti) {
     audioEl.src = `${currentAudioEntry.folder}/${book.id}/${book.id}.mp3`;
@@ -2354,7 +2355,10 @@ function loadAudioTrack(idx, startTime) {
     audioEl.src = `${currentAudioEntry.folder}/${book.id}.mp3`;
   }
 
-  // Determine start position: explicit startTime overrides saved
+  // startTime=0 means restart — wipe the saved position so picker shows no progress dot
+  if (startTime === 0) {
+    audioSaveProgress(currentAudioEntry, idx, 0);
+  }
   const resumeAt = (startTime != null) ? startTime : 0;
 
   audioEl.addEventListener('loadedmetadata', () => {
