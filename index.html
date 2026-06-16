@@ -2223,6 +2223,13 @@ function openAudioSeriesPicker(entry) {
   const grid = document.getElementById('audio-series-book-grid');
   grid.innerHTML = '';
 
+  // Find the book with the furthest saved progress (by time, not %)
+  let furthestIdx = -1, furthestTime = 0;
+  entry.catalogue.forEach((_, i) => {
+    const t = audioLoadProgress(entry, i);
+    if (t > furthestTime) { furthestTime = t; furthestIdx = i; }
+  });
+
   entry.catalogue.forEach((book, idx) => {
     const card = document.createElement('div');
     card.className = 'book-card';
@@ -2235,6 +2242,7 @@ function openAudioSeriesPicker(entry) {
     const savedDur  = audioLoadDuration(entry, idx);
     const hasProg   = savedTime > 0;
     const fillPct   = (hasProg && savedDur > 0) ? Math.min(99, Math.round(savedTime / savedDur * 100)) : 0;
+    const isCurrent = idx === furthestIdx;
 
     card.innerHTML = `
       <div class="book-cover" style="background:linear-gradient(135deg,${c1},${c2})">
@@ -2247,7 +2255,7 @@ function openAudioSeriesPicker(entry) {
             <div class="book-title-spine">${book.title}</div>
           </div>
         </div>
-        ${hasProg ? '<div class="bookmark-dot"></div>' : ''}
+        ${isCurrent ? '<div class="series-reading-badge">Listening</div>' : (hasProg ? '<div class="bookmark-dot"></div>' : '')}
       </div>
       <div class="book-meta">
         <div class="book-meta-name">${book.title}</div>
