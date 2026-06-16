@@ -1,4 +1,4 @@
-const CACHE_NAME = 'WQbApp1';
+const CACHE_NAME = 'WQbApp14';
 const CORE_ASSETS = [
   '/ThePerfectOne/index.html',
   '/ThePerfectOne/manifest.json',
