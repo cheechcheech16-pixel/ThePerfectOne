@@ -2082,11 +2082,20 @@ let _audioDragging     = false;
 function audioStoreKey(entry, idx) {
   return `audio_prog_${entry.id}_${String(idx).padStart(2,'0')}`;
 }
+function audioDurKey(entry, idx) {
+  return `audio_dur_${entry.id}_${String(idx).padStart(2,'0')}`;
+}
 function audioSaveProgress(entry, idx, time) {
   try { localStorage.setItem(audioStoreKey(entry, idx), String(time)); } catch(e) {}
 }
 function audioLoadProgress(entry, idx) {
   try { return parseFloat(localStorage.getItem(audioStoreKey(entry, idx))) || 0; } catch(e) { return 0; }
+}
+function audioSaveDuration(entry, idx, dur) {
+  try { localStorage.setItem(audioDurKey(entry, idx), String(dur)); } catch(e) {}
+}
+function audioLoadDuration(entry, idx) {
+  try { return parseFloat(localStorage.getItem(audioDurKey(entry, idx))) || 0; } catch(e) { return 0; }
 }
 
 function fmtTime(s) {
@@ -2223,10 +2232,9 @@ function openAudioSeriesPicker(entry) {
     const coverSrc = `${entry.folder}/${book.id}/cover.jpg`;
 
     const savedTime = audioLoadProgress(entry, idx);
+    const savedDur  = audioLoadDuration(entry, idx);
     const hasProg   = savedTime > 0;
-    const progHtml  = hasProg
-      ? `<div class="book-progress-bar"><div class="book-progress-fill" style="width:${Math.min(99, Math.round(savedTime / 1 * 0))}%"></div></div>`
-      : `<div class="book-progress-bar"></div>`;
+    const fillPct   = (hasProg && savedDur > 0) ? Math.min(99, Math.round(savedTime / savedDur * 100)) : 0;
 
     card.innerHTML = `
       <div class="book-cover" style="background:linear-gradient(135deg,${c1},${c2})">
@@ -2243,7 +2251,7 @@ function openAudioSeriesPicker(entry) {
       </div>
       <div class="book-meta">
         <div class="book-meta-name">${book.title}</div>
-        <div class="book-progress-bar">${hasProg ? `<div class="book-progress-fill" style="width:30%"></div>` : ''}</div>
+        <div class="book-progress-bar"><div class="book-progress-fill" style="width:${fillPct}%"></div></div>
       </div>`;
 
     card.addEventListener('click', () => {
@@ -2271,7 +2279,16 @@ function openAudioSeriesPicker(entry) {
 function showAudioResumeModal(entry, idx, savedTime, onResume, onRestart) {
   const book = entry.catalogue[idx];
   document.getElementById('audio-resume-title').textContent = book.title;
-  document.getElementById('audio-resume-time-label').textContent = 'at ' + fmtTime(savedTime);
+
+  // Show "at X:XX" and, if duration is known, "X:XX remaining"
+  const dur = audioLoadDuration(entry, idx);
+  let timeLine = 'at ' + fmtTime(savedTime);
+  if (dur > 0 && savedTime < dur) {
+    const remaining = dur - savedTime;
+    timeLine += ' · ' + fmtTime(remaining) + ' remaining';
+  }
+  document.getElementById('audio-resume-time-label').textContent = timeLine;
+
   const overlay = document.getElementById('audio-resume-overlay');
   overlay.classList.add('open');
 
@@ -2282,7 +2299,6 @@ function showAudioResumeModal(entry, idx, savedTime, onResume, onRestart) {
     overlay.classList.remove('open');
     continueBtn.replaceWith(continueBtn.cloneNode(true));
     restartBtn.replaceWith(restartBtn.cloneNode(true));
-    // re-bind overlay dismiss after clone
     document.getElementById('audio-resume-overlay').addEventListener('click', overlayDismiss);
   }
   function overlayDismiss(e) {
@@ -2342,6 +2358,10 @@ function loadAudioTrack(idx, startTime) {
   const resumeAt = (startTime != null) ? startTime : 0;
 
   audioEl.addEventListener('loadedmetadata', () => {
+    // Persist duration so the picker can show time-remaining without loading audio
+    if (audioEl.duration && isFinite(audioEl.duration)) {
+      audioSaveDuration(currentAudioEntry, idx, audioEl.duration);
+    }
     if (resumeAt > 0 && resumeAt < audioEl.duration - 5) {
       audioEl.currentTime = resumeAt;
     }
