@@ -213,6 +213,83 @@ html,body{height:100%;width:100%;background:#000;overscroll-behavior:none;color:
 .ctx-item:active{background:var(--border)}
 .ctx-item.muted{color:var(--text-dim);opacity:.5;pointer-events:none}
 .ctx-divider{height:1px;background:var(--border)}
+
+/* ── HOME AUDIO BUTTON ──────────────────────────────────────────── */
+.home-btn-icon.icon-audio{background:rgba(80,160,200,.15);color:#7ecfee}
+
+/* ── AUDIOBOOKS GRID VIEW ───────────────────────────────────────── */
+#view-audiobooks{background:#000}
+#audiobooks-scroll{flex:1;overflow-y:auto;padding:24px 16px 80px}
+#audiobooks-scroll::-webkit-scrollbar{width:3px}
+#audiobooks-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+#audiobooks-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:600px;margin:0 auto}
+
+/* ── AUDIO PLAYER VIEW ──────────────────────────────────────────── */
+#view-audio-player{background:#000;flex-direction:column}
+#audio-topbar{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#000;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;min-height:52px}
+#audio-back-btn{background:none;border:none;color:var(--text-dim);cursor:pointer;padding:8px;border-radius:8px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+#audio-back-btn svg{width:20px;height:20px}
+#audio-topbar-title{flex:1;font-size:.82rem;font-family:'Playfair Display',serif;font-style:italic;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+#audio-player-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:28px 20px 40px;gap:0}
+#audio-player-body::-webkit-scrollbar{width:3px}
+#audio-player-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* Cover art */
+#audio-cover-wrap{width:min(72vw,280px);aspect-ratio:1;border-radius:12px;overflow:hidden;position:relative;box-shadow:0 12px 48px rgba(0,0,0,.7);flex-shrink:0;background:var(--ink3)}
+#audio-cover-img{width:100%;height:100%;object-fit:cover;display:block}
+#audio-cover-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.3}
+#audio-cover-fallback svg{width:72px;height:72px}
+
+/* Titles */
+#audio-info{text-align:center;margin:24px 0 6px;width:100%}
+#audio-track-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--text);line-height:1.3}
+#audio-series-label{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-top:4px}
+#audio-author-label{font-size:.72rem;color:var(--text-dim);margin-top:3px}
+
+/* Track nav (prev/next book) */
+#audio-track-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 4px}
+.audio-track-btn{background:var(--ink3);border:1.5px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .15s,background .15s;flex-shrink:0}
+.audio-track-btn:active{background:var(--border)}
+.audio-track-btn:disabled{opacity:.3;pointer-events:none}
+#audio-track-counter{font-size:.7rem;color:var(--text-dim);letter-spacing:.06em;min-width:64px;text-align:center}
+
+/* Progress */
+#audio-progress-section{width:100%;margin:10px 0 6px}
+#audio-progress{width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:rgba(255,255,255,.15);cursor:pointer;outline:none}
+#audio-progress::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--amber);cursor:pointer;box-shadow:0 0 8px rgba(200,144,58,.5)}
+#audio-time-row{display:flex;justify-content:space-between;font-size:.68rem;color:var(--text-dim);font-variant-numeric:tabular-nums;margin-top:6px}
+
+/* Controls */
+#audio-controls{display:flex;align-items:center;justify-content:center;gap:16px;margin:20px 0 0}
+.audio-ctrl-btn{background:none;border:none;color:var(--text-dim);cursor:pointer;padding:10px;border-radius:50%;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:color .15s,background .15s}
+.audio-ctrl-btn:active{background:var(--ink3)}
+.audio-ctrl-btn svg{width:24px;height:24px}
+#audio-play-btn{background:var(--amber);color:#0f0e11;width:64px;height:64px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s;box-shadow:0 4px 20px rgba(200,144,58,.4)}
+#audio-play-btn:active{transform:scale(.93)}
+#audio-play-btn svg{width:26px;height:26px}
+
+/* Speed badge */
+#audio-speed-btn{background:var(--ink3);border:1.5px solid var(--border);color:var(--text-dim);font-size:.72rem;font-family:'Inter',sans-serif;padding:6px 12px;border-radius:20px;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-top:14px;letter-spacing:.04em;transition:border-color .15s,color .15s}
+#audio-speed-btn:active{background:var(--border)}
+
+/* Playlist panel */
+#audio-playlist-wrap{width:100%;margin-top:24px;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+#audio-playlist-header{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);padding:10px 14px;background:var(--ink2);border-bottom:1px solid var(--border)}
+.audio-playlist-item{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);-webkit-tap-highlight-color:transparent;transition:background .1s}
+.audio-playlist-item:last-child{border-bottom:none}
+.audio-playlist-item:active{background:var(--border)}
+.audio-playlist-item.active{background:rgba(200,144,58,.08)}
+.audio-playlist-num{font-size:.62rem;color:var(--text-dim);min-width:22px;font-variant-numeric:tabular-nums}
+.audio-playlist-title{flex:1;font-size:.8rem;color:var(--text);line-height:1.3}
+.audio-playlist-item.active .audio-playlist-title{color:var(--amber-glow)}
+.audio-playlist-dur{font-size:.65rem;color:var(--text-dim);font-variant-numeric:tabular-nums}
+.audio-playlist-playing{display:none;align-items:flex-end;gap:2px;height:14px}
+.audio-playlist-item.active .audio-playlist-playing{display:flex}
+.audio-playlist-playing span{display:block;width:3px;border-radius:2px;background:var(--amber-glow);height:4px}
+.audio-playlist-playing.on span{animation:ttswave .75s ease-in-out infinite}
+.audio-playlist-playing.on span:nth-child(2){animation-delay:.18s}
+.audio-playlist-playing.on span:nth-child(3){animation-delay:.36s}
 </style>
 </head>
 <body>
@@ -251,6 +328,85 @@ html,body{height:100%;width:100%;background:#000;overscroll-behavior:none;color:
           </div>
           <div class="home-btn-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
         </button>
+        <button class="home-btn" id="home-audio-btn">
+          <div class="home-btn-icon icon-audio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          </div>
+          <div class="home-btn-text">
+            <div class="home-btn-label">Audiobooks</div>
+            <div class="home-btn-sub">Listen to your library</div>
+          </div>
+          <div class="home-btn-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AUDIOBOOKS GRID ── -->
+  <div class="view" id="view-audiobooks">
+    <div id="audiobooks-scroll">
+      <p class="series-label">Audiobooks</p>
+      <div id="audiobooks-grid" class="series-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── AUDIO PLAYER ── -->
+  <div class="view" id="view-audio-player">
+    <div id="audio-topbar">
+      <button id="audio-back-btn" aria-label="Back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span id="audio-topbar-title">—</span>
+    </div>
+    <div id="audio-player-body">
+      <!-- Cover -->
+      <div id="audio-cover-wrap">
+        <img id="audio-cover-img" src="" alt="" style="display:none">
+        <div id="audio-cover-fallback">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+      </div>
+      <!-- Info -->
+      <div id="audio-info">
+        <div id="audio-track-title">—</div>
+        <div id="audio-series-label"></div>
+        <div id="audio-author-label"></div>
+      </div>
+      <!-- Track navigation (prev / counter / next book in series) -->
+      <div id="audio-track-nav">
+        <button class="audio-track-btn" id="audio-prev-track" aria-label="Previous book" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span id="audio-track-counter">1 / 1</span>
+        <button class="audio-track-btn" id="audio-next-track" aria-label="Next book" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+      <!-- Progress -->
+      <div id="audio-progress-section">
+        <input type="range" id="audio-progress" min="0" max="100" value="0" step="0.1">
+        <div id="audio-time-row">
+          <span id="audio-time-cur">0:00</span>
+          <span id="audio-time-total">0:00</span>
+        </div>
+      </div>
+      <!-- Controls: skip-back | play/pause | skip-forward + speed -->
+      <div id="audio-controls">
+        <button class="audio-ctrl-btn" id="audio-skip-back" aria-label="Rewind 30s">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/><text x="7" y="15" font-size="5" fill="currentColor" stroke="none" font-family="Inter,sans-serif" font-weight="600">30</text></svg>
+        </button>
+        <button id="audio-play-btn" aria-label="Play / Pause">
+          <svg id="audio-play-icon" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </button>
+        <button class="audio-ctrl-btn" id="audio-skip-fwd" aria-label="Forward 30s">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-3.51"/><text x="7" y="15" font-size="5" fill="currentColor" stroke="none" font-family="Inter,sans-serif" font-weight="600">30</text></svg>
+        </button>
+      </div>
+      <button id="audio-speed-btn">1×</button>
+      <!-- Playlist (for series with multiple books) -->
+      <div id="audio-playlist-wrap" style="display:none">
+        <div id="audio-playlist-header">Playlist</div>
+        <div id="audio-playlist-items"></div>
       </div>
     </div>
   </div>
@@ -1597,17 +1753,23 @@ function closeTintPanel() {
 function showView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const inReader = id === 'view-reader';
-  const inSeries = id === 'view-series';
-  const inHome   = id === 'view-home';
-  const inBooks  = id === 'view-books';
-  document.getElementById('topbar').style.display = (inReader || inHome) ? 'none' : 'flex';
-  document.getElementById('sort-btn').style.display = (inSeries || inReader || inHome || inBooks) ? 'none' : 'flex';
+  const inReader      = id === 'view-reader';
+  const inSeries      = id === 'view-series';
+  const inHome        = id === 'view-home';
+  const inBooks       = id === 'view-books';
+  const inAudiobooks  = id === 'view-audiobooks';
+  const inAudioPlayer = id === 'view-audio-player';
+  document.getElementById('topbar').style.display = (inReader || inHome || inAudioPlayer) ? 'none' : 'flex';
+  document.getElementById('sort-btn').style.display = (inSeries || inReader || inHome || inBooks || inAudiobooks || inAudioPlayer) ? 'none' : 'flex';
   if (inSeries) {
     document.getElementById('topbar-title').textContent = 'MY LIBRARY';
     document.getElementById('topbar-sub').textContent  = '';
   }
   if (inBooks) {
+    document.getElementById('topbar-title').textContent = 'MY LIBRARY';
+    document.getElementById('topbar-sub').textContent  = '';
+  }
+  if (inAudiobooks) {
     document.getElementById('topbar-title').textContent = 'MY LIBRARY';
     document.getElementById('topbar-sub').textContent  = '';
   }
@@ -1620,19 +1782,22 @@ function toast(m) { const el=document.getElementById('toast'); el.textContent=m;
 // ─── BACK NAVIGATION ──────────────────────────────────────────────
 // In reader → back to library; in library → back to series home; in series home / books → back to home landing
 window.addEventListener('popstate', () => {
-  const readerActive  = document.getElementById('view-reader').classList.contains('active');
-  const libraryActive = document.getElementById('view-library').classList.contains('active');
-  const seriesActive  = document.getElementById('view-series').classList.contains('active');
-  const booksActive   = document.getElementById('view-books').classList.contains('active');
-  if (readerActive)       document.getElementById('back-btn').click();
+  const readerActive       = document.getElementById('view-reader').classList.contains('active');
+  const audioPlayerActive  = document.getElementById('view-audio-player').classList.contains('active');
+  const libraryActive      = document.getElementById('view-library').classList.contains('active');
+  const seriesActive       = document.getElementById('view-series').classList.contains('active');
+  const booksActive        = document.getElementById('view-books').classList.contains('active');
+  const audiobooksActive   = document.getElementById('view-audiobooks').classList.contains('active');
+  if (readerActive)             document.getElementById('back-btn').click();
+  else if (audioPlayerActive)   document.getElementById('audio-back-btn').click();
   else if (libraryActive) {
     if (currentContext === 'standalone') { buildBooksView(); showView('view-books'); }
     else { buildSeriesHome(); showView('view-series'); }
   }
-  else if (seriesActive || booksActive) showView('view-home');
+  else if (seriesActive || booksActive || audiobooksActive) showView('view-home');
 });
 
-// Topbar logo: from library → series home or books list depending on context; from series/books → home landing
+// Topbar logo: from library → series home or books list depending on context; from series/books/audiobooks → home landing
 document.getElementById('topbar-logo').addEventListener('click', () => {
   if (document.getElementById('view-library').classList.contains('active')) {
     if (currentContext === 'standalone') {
@@ -1644,7 +1809,8 @@ document.getElementById('topbar-logo').addEventListener('click', () => {
     }
   } else if (
     document.getElementById('view-series').classList.contains('active') ||
-    document.getElementById('view-books').classList.contains('active')
+    document.getElementById('view-books').classList.contains('active') ||
+    document.getElementById('view-audiobooks').classList.contains('active')
   ) {
     showView('view-home');
   }
@@ -1660,6 +1826,12 @@ document.getElementById('home-series-btn').addEventListener('click', () => {
 document.getElementById('home-books-btn').addEventListener('click', () => {
   buildBooksView();
   showView('view-books');
+  history.pushState({}, '');
+});
+
+document.getElementById('home-audio-btn').addEventListener('click', () => {
+  buildAudiobooksView();
+  showView('view-audiobooks');
   history.pushState({}, '');
 });
 
@@ -1817,6 +1989,402 @@ function openStandaloneBook(id) {
     b.classList.toggle('active', b.dataset.id === currentTint));
   openBook('01');
 }
+
+// ─── AUDIOBOOKS ───────────────────────────────────────────────────
+// Each entry can be a series (catalogue.length > 1) or a standalone.
+// File convention:
+//   Series:     AUDIO/series/<id>/<bookId>.mp3  + cover.jpg
+//   Standalone: AUDIO/standalone/<id>/01.mp3    + cover.jpg
+//
+// To add a 12-book saga called "The Shannara Chronicles":
+//   shannara: {
+//     id: 'shannara', name: 'The Shannara Chronicles', sub: 'Terry Brooks',
+//     type: 'series',   // 'series' or 'standalone'
+//     folder: 'AUDIO/series/shannara',
+//     accent: '#2e8b57', accentDim:'#1a5230', accentGlow:'#4fbe80',
+//     catalogue: [
+//       {id:'01', title:'The Sword of Shannara'},
+//       {id:'02', title:'The Elfstones of Shannara'},
+//       … up to 12
+//     ]
+//   }
+// For a standalone audiobook:
+//   wwz_audio: {
+//     id: 'wwz_audio', name: 'World War Z', sub: 'Max Brooks',
+//     type: 'standalone',
+//     folder: 'AUDIO/standalone/wwz',
+//     accent: '#c8903a', accentDim:'#8a5f20', accentGlow:'#fbbf60',
+//     catalogue: [ {id:'01', title:'World War Z'} ]
+//   }
+
+const AUDIOBOOKS = {
+  c: {
+    id: 'c',
+    name: 'Cirque Du Freak',
+    sub: 'Darren Shan',
+    type: 'series',
+    folder: 'AUDIO/series/c',
+    accent: '#50a0c8', accentDim: '#2a6080', accentGlow: '#7ecfee',
+    catalogue: [
+      {id:'01', title:'Cirque Du Freak: A Living Nightmare'},
+      {id:'02', title:'The Vampire\'s Assistant'},
+      {id:'03', title:'Tunnels of Blood'},
+      {id:'04', title:'Vampire Mountain'},
+      {id:'05', title:'Trials of Death'},
+      {id:'06', title:'The Vampire Prince'},
+      {id:'07', title:'Hunters of the Dusk'},
+      {id:'08', title:'Allies of the Night'},
+      {id:'09', title:'Killers of the Dawn'},
+      {id:'10', title:'The Lake of Souls'},
+      {id:'11', title:'Lord of the Shadows'},
+      {id:'12', title:'Sons of Destiny'},
+    ],
+  },
+};
+
+// ── Audio player state ────────────────────────────────────────────
+let currentAudioEntry  = null;   // the AUDIOBOOKS entry
+let currentAudioIdx    = 0;      // index into catalogue
+let audioEl            = null;   // the <audio> element
+let audioSpeeds        = [1, 1.25, 1.5, 2, 0.75];
+let audioSpeedIdx      = 0;
+let _audioDragging     = false;
+
+function audioStoreKey(entry, idx) {
+  return `audio_prog_${entry.id}_${String(idx).padStart(2,'0')}`;
+}
+function audioSaveProgress(entry, idx, time) {
+  try { localStorage.setItem(audioStoreKey(entry, idx), String(time)); } catch(e) {}
+}
+function audioLoadProgress(entry, idx) {
+  try { return parseFloat(localStorage.getItem(audioStoreKey(entry, idx))) || 0; } catch(e) { return 0; }
+}
+
+function fmtTime(s) {
+  if (!isFinite(s) || s < 0) return '0:00';
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = Math.floor(s % 60);
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  return `${m}:${String(sec).padStart(2,'0')}`;
+}
+
+// Build the audiobooks grid (mosaic cards, same visual language as series)
+function buildAudiobooksView() {
+  const grid = document.getElementById('audiobooks-grid');
+  grid.innerHTML = '';
+  const entries = Object.values(AUDIOBOOKS);
+
+  if (!entries.length) {
+    grid.innerHTML = `<p style="color:var(--text-dim);font-size:.82rem;grid-column:1/-1;text-align:center;padding:40px 0;line-height:1.7">
+      No audiobooks yet.<br>
+      <span style="font-size:.7rem;letter-spacing:.06em;opacity:.6">Add entries to AUDIOBOOKS in the source.</span>
+    </p>`;
+    return;
+  }
+
+  entries.forEach(entry => {
+    const card = document.createElement('div');
+    card.className = 'series-card';
+    card.dataset.id = entry.id;
+
+    // Mosaic background (4 shimmer tiles → replaced by cover when loaded)
+    const bg = document.createElement('div');
+    bg.className = 'series-bg';
+    bg.id = `audio-bg-${entry.id}`;
+    for (let i = 0; i < 4; i++) {
+      const tile = document.createElement('div');
+      tile.className = 'series-bg-shimmer';
+      bg.appendChild(tile);
+    }
+
+    const bookCount = entry.catalogue.length;
+    const countPill = bookCount > 1
+      ? `<div class="series-count">${bookCount} Books</div>`
+      : '';
+
+    card.innerHTML = `
+      <div class="series-overlay"></div>
+      <div class="series-info">
+        <div class="series-name">${entry.name}</div>
+        <div class="series-sub">${entry.sub}</div>
+        ${countPill}
+      </div>`;
+    card.insertBefore(bg, card.firstChild);
+    card.addEventListener('click', () => openAudioEntry(entry.id));
+    grid.appendChild(card);
+  });
+
+  // Lazy-load covers for mosaic cards
+  entries.forEach(entry => {
+    // We try to load cover.jpg from the first book's folder
+    const coverUrl = `${entry.folder}/cover.jpg`;
+    const img = new Image();
+    img.onload = () => {
+      const bg = document.getElementById(`audio-bg-${entry.id}`);
+      if (!bg) return;
+      bg.innerHTML = '';
+      // For single-book entries, show full cover; for multi-book, tile 4 copies
+      const count = entry.catalogue.length > 1 ? 4 : 1;
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('img');
+        el.className = 'series-bg-img';
+        el.src = coverUrl;
+        if (count === 1) {
+          // Full-cover single book: absolute fill like the standalone book cards
+          el.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block';
+        }
+        bg.appendChild(el);
+      }
+      // For multi-book series load per-book covers if available
+      if (entry.catalogue.length > 1) {
+        entry.catalogue.slice(0,4).forEach((book, i) => {
+          const bCover = `${entry.folder}/${book.id}/cover.jpg`;
+          const bImg = new Image();
+          bImg.onload = () => {
+            const tiles = bg.querySelectorAll('.series-bg-img');
+            if (tiles[i]) tiles[i].src = bCover;
+          };
+          bImg.src = bCover;
+        });
+      }
+    };
+    img.src = coverUrl;
+  });
+}
+
+// Open an audiobook entry → show the player
+function openAudioEntry(id) {
+  const entry = AUDIOBOOKS[id];
+  if (!entry) return;
+  currentAudioEntry = entry;
+  currentAudioIdx   = 0;
+  audioSpeedIdx     = 0;
+  loadAudioTrack(0);
+  showView('view-audio-player');
+  history.pushState({}, '');
+}
+
+// Load a specific track by index into the player
+function loadAudioTrack(idx) {
+  if (!currentAudioEntry) return;
+  const cat = currentAudioEntry.catalogue;
+  if (idx < 0 || idx >= cat.length) return;
+
+  // Save progress on the current track before switching
+  if (audioEl && currentAudioIdx !== idx) {
+    audioSaveProgress(currentAudioEntry, currentAudioIdx, audioEl.currentTime);
+  }
+  currentAudioIdx = idx;
+  const book = cat[idx];
+
+  // Destroy old audio element cleanly
+  if (audioEl) {
+    audioEl.pause();
+    audioEl.src = '';
+    audioEl.load();
+  }
+  audioEl = new Audio();
+  audioEl.preload = 'metadata';
+
+  // Build src — for series, individual book subfolder; for standalone, root folder
+  const isMulti = cat.length > 1;
+  if (isMulti) {
+    audioEl.src = `${currentAudioEntry.folder}/${book.id}/${book.id}.mp3`;
+  } else {
+    audioEl.src = `${currentAudioEntry.folder}/${book.id}.mp3`;
+  }
+
+  // Restore saved position
+  const savedTime = audioLoadProgress(currentAudioEntry, idx);
+  audioEl.addEventListener('loadedmetadata', () => {
+    if (savedTime > 0 && savedTime < audioEl.duration - 5) {
+      audioEl.currentTime = savedTime;
+    }
+    updateAudioUI();
+  }, {once: true});
+
+  audioEl.addEventListener('timeupdate', () => {
+    if (_audioDragging) return;
+    const pct = audioEl.duration ? audioEl.currentTime / audioEl.duration * 100 : 0;
+    document.getElementById('audio-progress').value = pct;
+    document.getElementById('audio-time-cur').textContent   = fmtTime(audioEl.currentTime);
+    document.getElementById('audio-time-total').textContent = fmtTime(audioEl.duration);
+    // Save every ~5 seconds
+    if (Math.floor(audioEl.currentTime) % 5 === 0) {
+      audioSaveProgress(currentAudioEntry, idx, audioEl.currentTime);
+    }
+    updatePlaylistHighlight();
+  });
+
+  audioEl.addEventListener('play',  updateAudioPlayIcon);
+  audioEl.addEventListener('pause', updateAudioPlayIcon);
+  audioEl.addEventListener('ended', () => {
+    audioSaveProgress(currentAudioEntry, idx, 0); // reset position when done
+    if (idx + 1 < cat.length) {
+      // Auto-advance to next book in a series
+      loadAudioTrack(idx + 1);
+      audioEl.play().catch(()=>{});
+    } else {
+      updateAudioPlayIcon();
+    }
+  });
+
+  audioEl.playbackRate = audioSpeeds[audioSpeedIdx];
+  updateAudioUI();
+}
+
+function updateAudioUI() {
+  if (!currentAudioEntry) return;
+  const cat   = currentAudioEntry.catalogue;
+  const book  = cat[currentAudioIdx];
+  const isMulti = cat.length > 1;
+
+  document.getElementById('audio-topbar-title').textContent = currentAudioEntry.name;
+  document.getElementById('audio-track-title').textContent  = book.title;
+  document.getElementById('audio-author-label').textContent = currentAudioEntry.sub;
+  document.getElementById('audio-series-label').textContent =
+    isMulti ? currentAudioEntry.name + ' · Book ' + (currentAudioIdx + 1) : '';
+
+  document.getElementById('audio-track-counter').textContent =
+    `${currentAudioIdx + 1} / ${cat.length}`;
+
+  document.getElementById('audio-prev-track').disabled = currentAudioIdx === 0;
+  document.getElementById('audio-next-track').disabled = currentAudioIdx === cat.length - 1;
+
+  // Cover art — for multi-book series try per-book cover, fallback to series cover
+  const coverImg = document.getElementById('audio-cover-img');
+  const fallback  = document.getElementById('audio-cover-fallback');
+  const coverSrc  = isMulti
+    ? `${currentAudioEntry.folder}/${book.id}/cover.jpg`
+    : `${currentAudioEntry.folder}/cover.jpg`;
+  coverImg.style.display = 'none';
+  fallback.style.display = 'flex';
+  coverImg.onload = () => { coverImg.style.display = 'block'; fallback.style.display = 'none'; };
+  coverImg.onerror = () => {
+    // For per-book cover failure, try the series-level cover
+    if (isMulti && coverImg.src !== `${location.origin}/${currentAudioEntry.folder}/cover.jpg`) {
+      coverImg.src = `${currentAudioEntry.folder}/cover.jpg`;
+    }
+  };
+  coverImg.src = coverSrc;
+
+  // Speed
+  document.getElementById('audio-speed-btn').textContent = audioSpeeds[audioSpeedIdx] + '×';
+
+  // Progress reset
+  document.getElementById('audio-progress').value = 0;
+  document.getElementById('audio-time-cur').textContent   = '0:00';
+  document.getElementById('audio-time-total').textContent = '0:00';
+
+  // Playlist
+  const playlistWrap  = document.getElementById('audio-playlist-wrap');
+  const playlistItems = document.getElementById('audio-playlist-items');
+  if (isMulti) {
+    playlistWrap.style.display = 'block';
+    playlistItems.innerHTML = '';
+    cat.forEach((b, i) => {
+      const item = document.createElement('div');
+      item.className = 'audio-playlist-item' + (i === currentAudioIdx ? ' active' : '');
+      item.dataset.idx = i;
+      item.innerHTML = `
+        <span class="audio-playlist-num">${i + 1}</span>
+        <span class="audio-playlist-title">${b.title}</span>
+        <div class="audio-playlist-playing"><span></span><span></span><span></span></div>`;
+      item.addEventListener('click', () => {
+        const wasPlaying = audioEl && !audioEl.paused;
+        loadAudioTrack(i);
+        if (wasPlaying) audioEl.play().catch(()=>{});
+      });
+      playlistItems.appendChild(item);
+    });
+  } else {
+    playlistWrap.style.display = 'none';
+  }
+
+  updateAudioPlayIcon();
+}
+
+function updateAudioPlayIcon() {
+  const icon = document.getElementById('audio-play-icon');
+  if (!icon) return;
+  const playing = audioEl && !audioEl.paused;
+  icon.innerHTML = playing
+    ? '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>'
+    : '<polygon points="5 3 19 12 5 21 5 3"/>';
+  // Animate playlist bars
+  document.querySelectorAll('.audio-playlist-playing').forEach(el => {
+    el.classList.toggle('on', playing);
+  });
+}
+
+function updatePlaylistHighlight() {
+  document.querySelectorAll('.audio-playlist-item').forEach((el, i) => {
+    el.classList.toggle('active', i === currentAudioIdx);
+  });
+}
+
+// ── Audio player controls ─────────────────────────────────────────
+document.getElementById('audio-play-btn').addEventListener('click', () => {
+  if (!audioEl) return;
+  if (audioEl.paused) audioEl.play().catch(()=>{});
+  else audioEl.pause();
+});
+
+document.getElementById('audio-skip-back').addEventListener('click', () => {
+  if (audioEl) audioEl.currentTime = Math.max(0, audioEl.currentTime - 30);
+});
+document.getElementById('audio-skip-fwd').addEventListener('click', () => {
+  if (audioEl) audioEl.currentTime = Math.min(audioEl.duration || 0, audioEl.currentTime + 30);
+});
+
+document.getElementById('audio-prev-track').addEventListener('click', () => {
+  if (!currentAudioEntry) return;
+  const wasPlaying = audioEl && !audioEl.paused;
+  loadAudioTrack(currentAudioIdx - 1);
+  if (wasPlaying) audioEl.play().catch(()=>{});
+});
+document.getElementById('audio-next-track').addEventListener('click', () => {
+  if (!currentAudioEntry) return;
+  const wasPlaying = audioEl && !audioEl.paused;
+  loadAudioTrack(currentAudioIdx + 1);
+  if (wasPlaying) audioEl.play().catch(()=>{});
+});
+
+document.getElementById('audio-speed-btn').addEventListener('click', () => {
+  audioSpeedIdx = (audioSpeedIdx + 1) % audioSpeeds.length;
+  const rate = audioSpeeds[audioSpeedIdx];
+  document.getElementById('audio-speed-btn').textContent = rate + '×';
+  if (audioEl) audioEl.playbackRate = rate;
+  toast(`Speed: ${rate}×`);
+});
+
+// Progress scrubber
+const audioProgressEl = document.getElementById('audio-progress');
+audioProgressEl.addEventListener('mousedown',  () => { _audioDragging = true; });
+audioProgressEl.addEventListener('touchstart', () => { _audioDragging = true; }, {passive:true});
+audioProgressEl.addEventListener('input', () => {
+  if (!audioEl || !audioEl.duration) return;
+  const t = audioEl.duration * parseFloat(audioProgressEl.value) / 100;
+  document.getElementById('audio-time-cur').textContent = fmtTime(t);
+});
+audioProgressEl.addEventListener('change', () => {
+  _audioDragging = false;
+  if (!audioEl || !audioEl.duration) return;
+  audioEl.currentTime = audioEl.duration * parseFloat(audioProgressEl.value) / 100;
+});
+audioProgressEl.addEventListener('mouseup',  () => { _audioDragging = false; });
+audioProgressEl.addEventListener('touchend', () => { _audioDragging = false; }, {passive:true});
+
+// Back button on audio player
+document.getElementById('audio-back-btn').addEventListener('click', () => {
+  if (audioEl) {
+    audioSaveProgress(currentAudioEntry, currentAudioIdx, audioEl.currentTime);
+    audioEl.pause();
+  }
+  buildAudiobooksView();
+  showView('view-audiobooks');
+});
 
 // ─── INIT ─────────────────────────────────────────────────────────
 buildTintPicker();
