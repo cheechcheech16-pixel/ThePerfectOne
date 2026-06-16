@@ -1374,7 +1374,19 @@ function ttsUpdatePlayState() {
 // Called by ttsPlayPause (fresh start) and by itself recursively on page end.
 async function ttsStartReading() {
   const text = await ttsGetPageText(currentPage);
-  if (!text) { toast('No readable text on this page'); ttsAutoRead = false; ttsUpdatePlayState(); return; }
+  if (!text) {
+    if (ttsAutoRead && currentPage < totalPages) {
+      // Page has no readable text (e.g. full-page image) — silently skip it
+      await gotoPageSilent(currentPage + 1);
+      await new Promise(r => setTimeout(r, 150));
+      if (ttsAutoRead) ttsStartReading();
+    } else {
+      toast('No readable text on this page');
+      ttsAutoRead = false;
+      ttsUpdatePlayState();
+    }
+    return;
+  }
   window.speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text);
   // Clamp index in case voices list changed since panel was opened
