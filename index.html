@@ -338,7 +338,7 @@ html,body{height:100%;width:100%;background:#000;overscroll-behavior:none;color:
   <div class="tts-controls">
     <button id="tts-play-btn">
       <svg id="tts-play-icon" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      <span id="tts-play-label">Play Page</span>
+      <span id="tts-play-label">Play</span>
       <div id="tts-anim"><span></span><span></span><span></span></div>
     </button>
     <button id="tts-stop-btn" aria-label="Stop">
@@ -347,7 +347,7 @@ html,body{height:100%;width:100%;background:#000;overscroll-behavior:none;color:
   </div>
   <div class="tts-speed-row">
     <span class="tts-speed-label">Speed</span>
-    <input type="range" id="tts-rate" min="0.5" max="2" step="0.25" value="1">
+    <input type="range" id="tts-rate" min="0.5" max="3" step="0.05" value="1">
     <span class="tts-speed-val" id="tts-rate-val">1×</span>
   </div>
   <div class="tts-voice-section">
@@ -1004,6 +1004,20 @@ async function gotoPage(n) {
   renderIntoSlot(slot('prev'), n - 1);
 }
 
+// Silent page advance used by TTS auto-read — does NOT call ttsStop()
+// so the auto-advance chain stays alive (ttsAutoRead remains true).
+async function gotoPageSilent(n) {
+  n = Math.max(1, Math.min(n, totalPages));
+  currentPage = n;
+  panOffsetX = 0; panOffsetY = 0;
+  if (!scrollLockOn) zoomLevel = 1;
+  await renderIntoSlot(slot('cur'), n);
+  placeSlots();
+  updateUI(); saveProgress();
+  renderIntoSlot(slot('next'), n + 1);
+  renderIntoSlot(slot('prev'), n - 1);
+}
+
 // ─── ZOOM + PAN + SWIPE ───────────────────────────────────────────
 // Page flips are VERTICAL only. Always. Swipe up = next, swipe down = prev.
 //
@@ -1291,6 +1305,7 @@ document.getElementById('back-btn').addEventListener('click', () => {
 // ─── TTS ──────────────────────────────────────────────────────────
 let ttsSpeaking     = false;
 let ttsPaused       = false;
+let ttsAutoRead     = false;   // continuous read — auto-turns pages until stopped
 let ttsVoices       = [];
 let ttsVoiceIdx     = 0;
 let ttsRate         = 1.0;
@@ -1348,11 +1363,48 @@ function ttsUpdatePlayState() {
     topBtn.style.color = 'var(--amber)';
   } else {
     playBtn.classList.remove('playing');
-    label.textContent = 'Play Page';
+    label.textContent = 'Play';
     icon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
     anim.classList.remove('on');
     topBtn.style.color = '';
   }
+}
+
+// Core utterance builder — speaks the current page, then auto-advances if ttsAutoRead is set.
+// Called by ttsPlayPause (fresh start) and by itself recursively on page end.
+async function ttsStartReading() {
+  const text = await ttsGetPageText(currentPage);
+  if (!text) { toast('No readable text on this page'); ttsAutoRead = false; ttsUpdatePlayState(); return; }
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  // Clamp index in case voices list changed since panel was opened
+  if (ttsVoiceIdx >= ttsVoices.length) ttsVoiceIdx = 0;
+  // Always assign the voice explicitly — without this, mobile browsers fall
+  // back to their default robotic system voice regardless of the picker.
+  const selectedVoice = ttsVoices[ttsVoiceIdx] || null;
+  if (selectedVoice) utt.voice = selectedVoice;
+  utt.rate  = ttsRate;
+  utt.onstart  = () => { ttsSpeaking = true;  ttsPaused = false; ttsUpdatePlayState(); };
+  utt.onend    = async () => {
+    ttsSpeaking = false; ttsPaused = false;
+    if (ttsAutoRead && currentPage < totalPages) {
+      // Turn to the next page without calling ttsStop() (which would clear ttsAutoRead)
+      ttsUpdatePlayState();
+      await gotoPageSilent(currentPage + 1);
+      await new Promise(r => setTimeout(r, 350)); // brief natural pause between pages
+      if (ttsAutoRead) ttsStartReading();
+    } else {
+      ttsAutoRead = false;
+      ttsUpdatePlayState();
+    }
+  };
+  utt.onerror  = () => { ttsSpeaking = false; ttsPaused = false; ttsAutoRead = false; ttsUpdatePlayState(); };
+  utt.onpause  = () => { ttsPaused = true;  ttsUpdatePlayState(); };
+  utt.onresume = () => { ttsPaused = false; ttsUpdatePlayState(); };
+  _ttsUtt = utt;
+  ttsSpeaking = true; ttsPaused = false;
+  ttsUpdatePlayState();
+  window.speechSynthesis.speak(utt);
 }
 
 async function ttsPlayPause() {
@@ -1368,30 +1420,13 @@ async function ttsPlayPause() {
     ttsUpdatePlayState();
     return;
   }
-  const text = await ttsGetPageText(currentPage);
-  if (!text) { toast('No readable text on this page'); return; }
-  window.speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
-  // Clamp index in case voices list changed since panel was opened
-  if (ttsVoiceIdx >= ttsVoices.length) ttsVoiceIdx = 0;
-  // Always assign the voice explicitly — without this, mobile browsers fall
-  // back to their default robotic system voice regardless of the picker.
-  const selectedVoice = ttsVoices[ttsVoiceIdx] || null;
-  if (selectedVoice) utt.voice = selectedVoice;
-  utt.rate  = ttsRate;
-  utt.onstart  = () => { ttsSpeaking = true;  ttsPaused = false; ttsUpdatePlayState(); };
-  utt.onend    = () => { ttsSpeaking = false; ttsPaused = false; ttsUpdatePlayState(); };
-  utt.onerror  = () => { ttsSpeaking = false; ttsPaused = false; ttsUpdatePlayState(); };
-  utt.onpause  = () => { ttsPaused = true;  ttsUpdatePlayState(); };
-  utt.onresume = () => { ttsPaused = false; ttsUpdatePlayState(); };
-  _ttsUtt = utt;
-  ttsSpeaking = true; ttsPaused = false;
-  ttsUpdatePlayState();
-  window.speechSynthesis.speak(utt);
+  ttsAutoRead = true;
+  await ttsStartReading();
 }
 
 function ttsStop() {
   if (!window.speechSynthesis) return;
+  ttsAutoRead = false;   // cancels any pending auto-advance chain
   window.speechSynthesis.cancel();
   _ttsUtt = null;
   ttsSpeaking = false; ttsPaused = false;
@@ -1474,7 +1509,7 @@ if (window.speechSynthesis) {
 // On slider settle, cancel + restart so the new speed takes effect immediately.
 document.getElementById('tts-rate').addEventListener('input', e => {
   ttsRate = parseFloat(e.target.value);
-  document.getElementById('tts-rate-val').textContent = ttsRate + '×';
+  document.getElementById('tts-rate-val').textContent = parseFloat(ttsRate.toFixed(2)) + '×';
   if (ttsSpeaking || ttsPaused) {
     clearTimeout(_ttsRateTimer);
     _ttsRateTimer = setTimeout(() => {
