@@ -1576,29 +1576,26 @@ document.getElementById('home-books-btn').addEventListener('click', () => {
   history.pushState({}, '');
 });
 
-// ─── STANDALONE BOOKS VIEW ────────────────────────────────────────
-// Add standalone solo books to this object. Each entry follows the same
-// shape as a series but with a single-book catalogue.
-// Example entry (uncomment and fill in your own values to add a book):
-//
-// const STANDALONE_BOOKS = {
-//   exampleBook: {
-//     id: 'exampleBook',
-//     name: 'My Book Title',
-//     sub: 'Author Name',
-//     bookFolder: 'standalone',
-//     coversVar: 'STANDALONE_COVERS',
-//     coversFile: 'standalone/covers.js',
-//     storeKey: 'exampleBook_data_v1',
-//     tintKey: 'exampleBook_tint',
-//     accent: '#c8903a', accentDim: '#8a5f20', accentGlow: '#fbbf60',
-//     catalogue: [
-//       { id: '01', num: '1', title: 'My Book Title' },
-//     ],
-//     spineColors: [['#1a0a0a','#6b1a1a']],
-//   },
-// };
-const STANDALONE_BOOKS = {};  // ← populate this with your standalone books
+// ─── STANDALONE BOOKS ─────────────────────────────────────────────
+const STANDALONE_BOOKS = {
+  anotherplace: {
+    id: 'anotherplace',
+    name: 'An Other Place',
+    sub: 'Darren Dash',
+    bookFolder: 'STANDALONE/anotherplace',
+    coversVar: 'ANOTHERPLACE_COVERS',
+    coversFile: 'STANDALONE/anotherplace/covers.js',
+    storeKey: 'anotherplace_data_v1',
+    tintKey: 'anotherplace_tint',
+    accent: '#c8903a', accentDim: '#8a5f20', accentGlow: '#fbbf60',
+    catalogue: [
+      {id:'01', num:'1', title:'An Other Place'},
+    ],
+    spineColors: [
+      ['#1a1a08','#7a7020'],
+    ],
+  },
+};
 
 function buildBooksView() {
   const grid = document.getElementById('books-grid');
