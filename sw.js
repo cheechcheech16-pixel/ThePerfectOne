@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mylibrary-v999999999';
+const CACHE_NAME = '99638148499';
 const CORE_ASSETS = [
   '/ThePerfectOne/index.html',
   '/ThePerfectOne/manifest.json',

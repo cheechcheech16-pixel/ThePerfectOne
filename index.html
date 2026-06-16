@@ -2205,6 +2205,7 @@ function openAudioEntry(id) {
       showAudioResumeModal(entry, 0, saved, () => {
         startAudioTrack(0, saved);
       }, () => {
+        audioSaveProgress(entry, 0, 0);
         startAudioTrack(0, 0);
       });
     } else {
@@ -2270,6 +2271,7 @@ function openAudioSeriesPicker(entry) {
         showAudioResumeModal(entry, idx, saved, () => {
           startAudioTrack(idx, saved);
         }, () => {
+          audioSaveProgress(entry, idx, 0); // clear save on explicit restart
           startAudioTrack(idx, 0);
         });
       } else {
@@ -2329,7 +2331,12 @@ function startAudioTrack(idx, startTime) {
   // Save the current track's position before switching away
   if (audioEl) {
     audioSaveProgress(currentAudioEntry, currentAudioIdx, audioEl.currentTime);
-    audioEl.pause();
+    // Remove pause listener before pausing so it doesn't overwrite the save with 0
+    const oldEl = audioEl;
+    audioEl = null;
+    oldEl.pause();
+    oldEl.src = '';
+    oldEl.load();
   }
   currentAudioIdx = idx;
   loadAudioTrack(idx, startTime);
@@ -2338,6 +2345,7 @@ function startAudioTrack(idx, startTime) {
 }
 
 // Load a specific track by index into the player, starting at startTime seconds
+// startTime: number = seek to that position; null = don't seek (fresh load)
 function loadAudioTrack(idx, startTime) {
   if (!currentAudioEntry) return;
   const cat = currentAudioEntry.catalogue;
@@ -2346,16 +2354,17 @@ function loadAudioTrack(idx, startTime) {
   currentAudioIdx = idx;
   const book = cat[idx];
 
-  // Destroy old audio element cleanly
+  // Clean up any existing audio element (e.g. auto-advance between tracks)
   if (audioEl) {
-    audioEl.pause();
-    audioEl.src = '';
-    audioEl.load();
+    const oldEl = audioEl;
+    audioEl = null;
+    oldEl.pause();
+    oldEl.src = '';
+    oldEl.load();
   }
   audioEl = new Audio();
   audioEl.preload = 'metadata';
 
-  // Build src
   const isMulti = cat.length > 1;
   if (isMulti) {
     audioEl.src = `${currentAudioEntry.folder}/${book.id}/${book.id}.mp3`;
@@ -2363,10 +2372,6 @@ function loadAudioTrack(idx, startTime) {
     audioEl.src = `${currentAudioEntry.folder}/${book.id}.mp3`;
   }
 
-  // startTime=0 means restart — wipe the saved position so picker shows no progress dot
-  if (startTime === 0) {
-    audioSaveProgress(currentAudioEntry, idx, 0);
-  }
   const resumeAt = (startTime != null) ? startTime : 0;
 
   audioEl.addEventListener('loadedmetadata', () => {
@@ -2398,9 +2403,11 @@ function loadAudioTrack(idx, startTime) {
     }
   });
 
-  // Save immediately on pause
-  audioEl.addEventListener('pause', () => {
-    audioSaveProgress(currentAudioEntry, idx, audioEl.currentTime);
+  // Save immediately on pause — but only if this element is still the active one
+  audioEl.addEventListener('pause', function() {
+    if (audioEl === this) {
+      audioSaveProgress(currentAudioEntry, idx, this.currentTime);
+    }
   });
 
   audioEl.addEventListener('play',  updateAudioPlayIcon);
