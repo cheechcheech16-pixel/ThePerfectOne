@@ -255,12 +255,6 @@ html,body{height:100%;width:100%;background:#000;overscroll-behavior:none;color:
 #audio-series-label{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-top:4px}
 #audio-author-label{font-size:.72rem;color:var(--text-dim);margin-top:3px}
 
-/* Track nav (prev/next book) */
-#audio-track-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 4px}
-.audio-track-btn{background:var(--ink3);border:1.5px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .15s,background .15s;flex-shrink:0}
-.audio-track-btn:active{background:var(--border)}
-.audio-track-btn:disabled{opacity:.3;pointer-events:none}
-#audio-track-counter{font-size:.7rem;color:var(--text-dim);letter-spacing:.06em;min-width:64px;text-align:center}
 
 /* Progress */
 #audio-progress-section{width:100%;margin:10px 0 6px}
@@ -277,27 +271,25 @@ html,body{height:100%;width:100%;background:#000;overscroll-behavior:none;color:
 #audio-play-btn:active{transform:scale(.93)}
 #audio-play-btn svg{width:26px;height:26px}
 
-/* Speed badge */
-#audio-speed-btn{background:var(--ink3);border:1.5px solid var(--border);color:var(--text-dim);font-size:.72rem;font-family:'Inter',sans-serif;padding:6px 12px;border-radius:20px;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-top:14px;letter-spacing:.04em;transition:border-color .15s,color .15s}
-#audio-speed-btn:active{background:var(--border)}
+/* Speed slider row */
+#audio-speed-row{display:flex;align-items:center;gap:10px;width:100%;margin-top:18px;padding:0 2px}
+#audio-speed-label{font-size:.68rem;color:var(--text-dim);white-space:nowrap;min-width:32px}
+#audio-speed-val{font-size:.72rem;color:var(--amber-glow);min-width:34px;text-align:right;font-variant-numeric:tabular-nums}
+#audio-speed-slider{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:rgba(255,255,255,.15);cursor:pointer;outline:none}
+#audio-speed-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--amber);cursor:pointer;box-shadow:0 0 8px rgba(200,144,58,.4)}
 
-/* Playlist panel */
-#audio-playlist-wrap{width:100%;margin-top:24px;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
-#audio-playlist-header{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);padding:10px 14px;background:var(--ink2);border-bottom:1px solid var(--border)}
-.audio-playlist-item{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);-webkit-tap-highlight-color:transparent;transition:background .1s}
-.audio-playlist-item:last-child{border-bottom:none}
-.audio-playlist-item:active{background:var(--border)}
-.audio-playlist-item.active{background:rgba(200,144,58,.08)}
-.audio-playlist-num{font-size:.62rem;color:var(--text-dim);min-width:22px;font-variant-numeric:tabular-nums}
-.audio-playlist-title{flex:1;font-size:.8rem;color:var(--text);line-height:1.3}
-.audio-playlist-item.active .audio-playlist-title{color:var(--amber-glow)}
-.audio-playlist-dur{font-size:.65rem;color:var(--text-dim);font-variant-numeric:tabular-nums}
-.audio-playlist-playing{display:none;align-items:flex-end;gap:2px;height:14px}
-.audio-playlist-item.active .audio-playlist-playing{display:flex}
-.audio-playlist-playing span{display:block;width:3px;border-radius:2px;background:var(--amber-glow);height:4px}
-.audio-playlist-playing.on span{animation:ttswave .75s ease-in-out infinite}
-.audio-playlist-playing.on span:nth-child(2){animation-delay:.18s}
-.audio-playlist-playing.on span:nth-child(3){animation-delay:.36s}
+/* Resume / Restart modal */
+#audio-resume-overlay{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center}
+#audio-resume-overlay.open{display:flex}
+#audio-resume-sheet{background:var(--ink2);border-top:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:24px 20px 40px;display:flex;flex-direction:column;gap:12px}
+#audio-resume-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.3}
+.audio-resume-btn{display:flex;align-items:center;gap:14px;background:var(--ink3);border:1.5px solid var(--border);border-radius:12px;padding:16px 18px;cursor:pointer;-webkit-tap-highlight-color:transparent;text-align:left;width:100%;transition:border-color .15s,background .15s}
+.audio-resume-btn:active{background:var(--border)}
+.audio-resume-btn.primary{border-color:var(--amber-dim);background:rgba(200,144,58,.06)}
+.audio-resume-btn-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(200,144,58,.15);color:var(--amber-glow)}
+.audio-resume-btn-icon svg{width:18px;height:18px}
+.audio-resume-btn-label{font-size:.88rem;font-weight:500;color:var(--text);line-height:1.2}
+.audio-resume-btn-sub{font-size:.7rem;color:var(--text-dim);margin-top:2px}
 </style>
 </head>
 <body>
@@ -390,16 +382,6 @@ html,body{height:100%;width:100%;background:#000;overscroll-behavior:none;color:
         <div id="audio-series-label"></div>
         <div id="audio-author-label"></div>
       </div>
-      <!-- Track navigation (prev / counter / next book in series) -->
-      <div id="audio-track-nav">
-        <button class="audio-track-btn" id="audio-prev-track" aria-label="Previous book" disabled>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <span id="audio-track-counter">1 / 1</span>
-        <button class="audio-track-btn" id="audio-next-track" aria-label="Next book" disabled>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
       <!-- Progress -->
       <div id="audio-progress-section">
         <input type="range" id="audio-progress" min="0" max="100" value="0" step="0.1">
@@ -408,7 +390,7 @@ html,body{height:100%;width:100%;background:#000;overscroll-behavior:none;color:
           <span id="audio-time-total">0:00</span>
         </div>
       </div>
-      <!-- Controls: skip-back | play/pause | skip-forward + speed -->
+      <!-- Controls: skip-back | play/pause | skip-forward -->
       <div id="audio-controls">
         <button class="audio-ctrl-btn" id="audio-skip-back" aria-label="Rewind 30s">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/><text x="7" y="15" font-size="5" fill="currentColor" stroke="none" font-family="Inter,sans-serif" font-weight="600">30</text></svg>
@@ -420,11 +402,11 @@ html,body{height:100%;width:100%;background:#000;overscroll-behavior:none;color:
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-3.51"/><text x="7" y="15" font-size="5" fill="currentColor" stroke="none" font-family="Inter,sans-serif" font-weight="600">30</text></svg>
         </button>
       </div>
-      <button id="audio-speed-btn">1×</button>
-      <!-- Playlist (for series with multiple books) -->
-      <div id="audio-playlist-wrap" style="display:none">
-        <div id="audio-playlist-header">Playlist</div>
-        <div id="audio-playlist-items"></div>
+      <!-- Speed slider -->
+      <div id="audio-speed-row">
+        <span id="audio-speed-label">Speed</span>
+        <input type="range" id="audio-speed-slider" min="0.5" max="2.5" step="0.1" value="1">
+        <span id="audio-speed-val">1.0×</span>
       </div>
     </div>
   </div>
@@ -499,6 +481,30 @@ html,body{height:100%;width:100%;background:#000;overscroll-behavior:none;color:
   </div>
 
 </div><!-- #app -->
+
+<!-- ── RESUME / RESTART MODAL ── -->
+<div id="audio-resume-overlay">
+  <div id="audio-resume-sheet">
+    <div id="audio-resume-title">—</div>
+    <button class="audio-resume-btn primary" id="audio-resume-continue">
+      <div class="audio-resume-btn-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </div>
+      <div>
+        <div class="audio-resume-btn-label">Resume</div>
+        <div class="audio-resume-btn-sub" id="audio-resume-time-label">at 0:00</div>
+      </div>
+    </button>
+    <button class="audio-resume-btn" id="audio-resume-restart">
+      <div class="audio-resume-btn-icon" style="background:rgba(255,255,255,.07);color:var(--text-dim)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+      </div>
+      <div>
+        <div class="audio-resume-btn-label">Restart from beginning</div>
+      </div>
+    </button>
+  </div>
+</div>
 
 <div id="toast"></div>
 <div id="tint-overlay"></div>
@@ -2070,8 +2076,7 @@ const AUDIOBOOKS = {
 let currentAudioEntry  = null;   // the AUDIOBOOKS entry
 let currentAudioIdx    = 0;      // index into catalogue
 let audioEl            = null;   // the <audio> element
-let audioSpeeds        = [1, 1.25, 1.5, 2, 0.75];
-let audioSpeedIdx      = 0;
+let audioSpeed         = 1.0;    // current playback rate
 let _audioDragging     = false;
 
 function audioStoreKey(entry, idx) {
@@ -2182,17 +2187,20 @@ function openAudioEntry(id) {
   const entry = AUDIOBOOKS[id];
   if (!entry) return;
   currentAudioEntry = entry;
-  audioSpeedIdx = 0;
 
   if (entry.catalogue.length > 1) {
-    // Show the book picker grid (like enterSeries does for reading books)
     openAudioSeriesPicker(entry);
   } else {
-    // Single audiobook — go straight to player
-    currentAudioIdx = 0;
-    loadAudioTrack(0);
-    showView('view-audio-player');
-    history.pushState({}, '');
+    const saved = audioLoadProgress(entry, 0);
+    if (saved > 0) {
+      showAudioResumeModal(entry, 0, saved, () => {
+        startAudioTrack(0, saved);
+      }, () => {
+        startAudioTrack(0, 0);
+      });
+    } else {
+      startAudioTrack(0, 0);
+    }
   }
 }
 
@@ -2207,22 +2215,17 @@ function openAudioSeriesPicker(entry) {
   grid.innerHTML = '';
 
   entry.catalogue.forEach((book, idx) => {
-    // Reuse the same .book-card style as the reading library
     const card = document.createElement('div');
     card.className = 'book-card';
 
-    // Spine color fallback (reuse cirque colors or first pair)
     const colors = (entry.spineColors && entry.spineColors[idx]) || ['#1a0a0a','#6b1a1a'];
     const [c1, c2] = colors;
-
-    // Try to load per-book cover
     const coverSrc = `${entry.folder}/${book.id}/cover.jpg`;
 
-    // Saved progress pill
     const savedTime = audioLoadProgress(entry, idx);
     const hasProg   = savedTime > 0;
     const progHtml  = hasProg
-      ? `<div class="book-progress-bar"><div class="book-progress-fill" style="width:40%"></div></div>`
+      ? `<div class="book-progress-bar"><div class="book-progress-fill" style="width:${Math.min(99, Math.round(savedTime / 1 * 0))}%"></div></div>`
       : `<div class="book-progress-bar"></div>`;
 
     card.innerHTML = `
@@ -2236,17 +2239,26 @@ function openAudioSeriesPicker(entry) {
             <div class="book-title-spine">${book.title}</div>
           </div>
         </div>
+        ${hasProg ? '<div class="bookmark-dot"></div>' : ''}
       </div>
       <div class="book-meta">
         <div class="book-meta-name">${book.title}</div>
-        ${progHtml}
+        <div class="book-progress-bar">${hasProg ? `<div class="book-progress-fill" style="width:30%"></div>` : ''}</div>
       </div>`;
 
     card.addEventListener('click', () => {
-      currentAudioIdx = idx;
-      loadAudioTrack(idx);
-      showView('view-audio-player');
-      history.pushState({}, '');
+      currentAudioEntry = entry;
+      currentAudioIdx   = idx;
+      const saved = audioLoadProgress(entry, idx);
+      if (saved > 0) {
+        showAudioResumeModal(entry, idx, saved, () => {
+          startAudioTrack(idx, saved);
+        }, () => {
+          startAudioTrack(idx, 0);
+        });
+      } else {
+        startAudioTrack(idx, 0);
+      }
     });
     grid.appendChild(card);
   });
@@ -2255,8 +2267,49 @@ function openAudioSeriesPicker(entry) {
   history.pushState({}, '');
 }
 
-// Load a specific track by index into the player
-function loadAudioTrack(idx) {
+// Show the resume / restart bottom sheet
+function showAudioResumeModal(entry, idx, savedTime, onResume, onRestart) {
+  const book = entry.catalogue[idx];
+  document.getElementById('audio-resume-title').textContent = book.title;
+  document.getElementById('audio-resume-time-label').textContent = 'at ' + fmtTime(savedTime);
+  const overlay = document.getElementById('audio-resume-overlay');
+  overlay.classList.add('open');
+
+  const continueBtn = document.getElementById('audio-resume-continue');
+  const restartBtn  = document.getElementById('audio-resume-restart');
+
+  function close() {
+    overlay.classList.remove('open');
+    continueBtn.replaceWith(continueBtn.cloneNode(true));
+    restartBtn.replaceWith(restartBtn.cloneNode(true));
+    // re-bind overlay dismiss after clone
+    document.getElementById('audio-resume-overlay').addEventListener('click', overlayDismiss);
+  }
+  function overlayDismiss(e) {
+    if (e.target === document.getElementById('audio-resume-overlay')) {
+      close();
+    }
+  }
+
+  document.getElementById('audio-resume-continue').addEventListener('click', () => {
+    close(); onResume();
+  }, {once: true});
+  document.getElementById('audio-resume-restart').addEventListener('click', () => {
+    close(); onRestart();
+  }, {once: true});
+  overlay.addEventListener('click', overlayDismiss);
+}
+
+// Start playback at a given time (0 = from beginning)
+function startAudioTrack(idx, startTime) {
+  currentAudioIdx = idx;
+  loadAudioTrack(idx, startTime);
+  showView('view-audio-player');
+  history.pushState({}, '');
+}
+
+// Load a specific track by index into the player, starting at startTime seconds
+function loadAudioTrack(idx, startTime) {
   if (!currentAudioEntry) return;
   const cat = currentAudioEntry.catalogue;
   if (idx < 0 || idx >= cat.length) return;
@@ -2285,42 +2338,52 @@ function loadAudioTrack(idx) {
     audioEl.src = `${currentAudioEntry.folder}/${book.id}.mp3`;
   }
 
-  // Restore saved position
-  const savedTime = audioLoadProgress(currentAudioEntry, idx);
+  // Determine start position: explicit startTime overrides saved
+  const resumeAt = (startTime != null) ? startTime : 0;
+
   audioEl.addEventListener('loadedmetadata', () => {
-    if (savedTime > 0 && savedTime < audioEl.duration - 5) {
-      audioEl.currentTime = savedTime;
+    if (resumeAt > 0 && resumeAt < audioEl.duration - 5) {
+      audioEl.currentTime = resumeAt;
     }
     updateAudioUI();
   }, {once: true});
 
+  // Periodic save every ~5 seconds during playback
+  let _lastSavedSec = -1;
   audioEl.addEventListener('timeupdate', () => {
     if (_audioDragging) return;
-    const pct = audioEl.duration ? audioEl.currentTime / audioEl.duration * 100 : 0;
+    const cur = audioEl.currentTime;
+    const dur = audioEl.duration;
+    const pct = dur ? cur / dur * 100 : 0;
     document.getElementById('audio-progress').value = pct;
-    document.getElementById('audio-time-cur').textContent   = fmtTime(audioEl.currentTime);
-    document.getElementById('audio-time-total').textContent = fmtTime(audioEl.duration);
-    // Save every ~5 seconds
-    if (Math.floor(audioEl.currentTime) % 5 === 0) {
-      audioSaveProgress(currentAudioEntry, idx, audioEl.currentTime);
+    document.getElementById('audio-time-cur').textContent   = fmtTime(cur);
+    document.getElementById('audio-time-total').textContent = fmtTime(dur);
+    // Save every 5 seconds
+    const sec = Math.floor(cur);
+    if (sec !== _lastSavedSec && sec % 5 === 0) {
+      _lastSavedSec = sec;
+      audioSaveProgress(currentAudioEntry, idx, cur);
     }
-    updatePlaylistHighlight();
+  });
+
+  // Save immediately on pause
+  audioEl.addEventListener('pause', () => {
+    audioSaveProgress(currentAudioEntry, idx, audioEl.currentTime);
   });
 
   audioEl.addEventListener('play',  updateAudioPlayIcon);
   audioEl.addEventListener('pause', updateAudioPlayIcon);
   audioEl.addEventListener('ended', () => {
-    audioSaveProgress(currentAudioEntry, idx, 0); // reset position when done
+    audioSaveProgress(currentAudioEntry, idx, 0); // clear position when done
     if (idx + 1 < cat.length) {
-      // Auto-advance to next book in a series
-      loadAudioTrack(idx + 1);
+      loadAudioTrack(idx + 1, 0);
       audioEl.play().catch(()=>{});
     } else {
       updateAudioPlayIcon();
     }
   });
 
-  audioEl.playbackRate = audioSpeeds[audioSpeedIdx];
+  audioEl.playbackRate = audioSpeed;
   updateAudioUI();
 }
 
@@ -2336,13 +2399,7 @@ function updateAudioUI() {
   document.getElementById('audio-series-label').textContent =
     isMulti ? currentAudioEntry.name + ' · Book ' + (currentAudioIdx + 1) : '';
 
-  document.getElementById('audio-track-counter').textContent =
-    `${currentAudioIdx + 1} / ${cat.length}`;
-
-  document.getElementById('audio-prev-track').disabled = currentAudioIdx === 0;
-  document.getElementById('audio-next-track').disabled = currentAudioIdx === cat.length - 1;
-
-  // Cover art — for multi-book series try per-book cover, fallback to series cover
+  // Cover art
   const coverImg = document.getElementById('audio-cover-img');
   const fallback  = document.getElementById('audio-cover-fallback');
   const coverSrc  = isMulti
@@ -2352,45 +2409,21 @@ function updateAudioUI() {
   fallback.style.display = 'flex';
   coverImg.onload = () => { coverImg.style.display = 'block'; fallback.style.display = 'none'; };
   coverImg.onerror = () => {
-    // For per-book cover failure, try the series-level cover
     if (isMulti && coverImg.src !== `${location.origin}/${currentAudioEntry.folder}/cover.jpg`) {
       coverImg.src = `${currentAudioEntry.folder}/cover.jpg`;
     }
   };
   coverImg.src = coverSrc;
 
-  // Speed
-  document.getElementById('audio-speed-btn').textContent = audioSpeeds[audioSpeedIdx] + '×';
+  // Speed slider
+  const slider = document.getElementById('audio-speed-slider');
+  slider.value = audioSpeed;
+  document.getElementById('audio-speed-val').textContent = audioSpeed.toFixed(1) + '×';
 
   // Progress reset
   document.getElementById('audio-progress').value = 0;
   document.getElementById('audio-time-cur').textContent   = '0:00';
   document.getElementById('audio-time-total').textContent = '0:00';
-
-  // Playlist
-  const playlistWrap  = document.getElementById('audio-playlist-wrap');
-  const playlistItems = document.getElementById('audio-playlist-items');
-  if (isMulti) {
-    playlistWrap.style.display = 'block';
-    playlistItems.innerHTML = '';
-    cat.forEach((b, i) => {
-      const item = document.createElement('div');
-      item.className = 'audio-playlist-item' + (i === currentAudioIdx ? ' active' : '');
-      item.dataset.idx = i;
-      item.innerHTML = `
-        <span class="audio-playlist-num">${i + 1}</span>
-        <span class="audio-playlist-title">${b.title}</span>
-        <div class="audio-playlist-playing"><span></span><span></span><span></span></div>`;
-      item.addEventListener('click', () => {
-        const wasPlaying = audioEl && !audioEl.paused;
-        loadAudioTrack(i);
-        if (wasPlaying) audioEl.play().catch(()=>{});
-      });
-      playlistItems.appendChild(item);
-    });
-  } else {
-    playlistWrap.style.display = 'none';
-  }
 
   updateAudioPlayIcon();
 }
@@ -2402,16 +2435,6 @@ function updateAudioPlayIcon() {
   icon.innerHTML = playing
     ? '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>'
     : '<polygon points="5 3 19 12 5 21 5 3"/>';
-  // Animate playlist bars
-  document.querySelectorAll('.audio-playlist-playing').forEach(el => {
-    el.classList.toggle('on', playing);
-  });
-}
-
-function updatePlaylistHighlight() {
-  document.querySelectorAll('.audio-playlist-item').forEach((el, i) => {
-    el.classList.toggle('active', i === currentAudioIdx);
-  });
 }
 
 // ── Audio player controls ─────────────────────────────────────────
@@ -2428,25 +2451,11 @@ document.getElementById('audio-skip-fwd').addEventListener('click', () => {
   if (audioEl) audioEl.currentTime = Math.min(audioEl.duration || 0, audioEl.currentTime + 30);
 });
 
-document.getElementById('audio-prev-track').addEventListener('click', () => {
-  if (!currentAudioEntry) return;
-  const wasPlaying = audioEl && !audioEl.paused;
-  loadAudioTrack(currentAudioIdx - 1);
-  if (wasPlaying) audioEl.play().catch(()=>{});
-});
-document.getElementById('audio-next-track').addEventListener('click', () => {
-  if (!currentAudioEntry) return;
-  const wasPlaying = audioEl && !audioEl.paused;
-  loadAudioTrack(currentAudioIdx + 1);
-  if (wasPlaying) audioEl.play().catch(()=>{});
-});
-
-document.getElementById('audio-speed-btn').addEventListener('click', () => {
-  audioSpeedIdx = (audioSpeedIdx + 1) % audioSpeeds.length;
-  const rate = audioSpeeds[audioSpeedIdx];
-  document.getElementById('audio-speed-btn').textContent = rate + '×';
-  if (audioEl) audioEl.playbackRate = rate;
-  toast(`Speed: ${rate}×`);
+// Speed slider
+document.getElementById('audio-speed-slider').addEventListener('input', function() {
+  audioSpeed = parseFloat(this.value);
+  document.getElementById('audio-speed-val').textContent = audioSpeed.toFixed(1) + '×';
+  if (audioEl) audioEl.playbackRate = audioSpeed;
 });
 
 // Progress scrubber
@@ -2473,7 +2482,6 @@ document.getElementById('audio-back-btn').addEventListener('click', () => {
     audioEl.pause();
   }
   if (currentAudioEntry && currentAudioEntry.catalogue.length > 1) {
-    // Go back to the series book picker
     openAudioSeriesPicker(currentAudioEntry);
   } else {
     buildAudiobooksView();
