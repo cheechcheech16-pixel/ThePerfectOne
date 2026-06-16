@@ -1594,6 +1594,23 @@ const STANDALONE_BOOKS = {
     spineColors: [
       ['#1a1a08','#7a7020'],
     ],
+  },  
+  sunburn: {
+    id: 'sunburn',
+    name: 'Sunburn',
+    sub: 'Darren Dash',
+    bookFolder: 'STANDALONE/Sunburn',
+    coversVar: 'SUNBURN_COVERS',
+    coversFile: 'STANDALONE/Sunburn/covers.js',
+    storeKey: 'sunburn_data_v1',
+    tintKey: 'sunburn_tint',
+    accent: '#2e8b57', accentDim: '#1a5230', accentGlow: '#4fbe80',
+    catalogue: [
+      {id:'01', num:'1', title:'Sunburn'},
+    ],
+    spineColors: [
+      ['#100a1a','#6020a0'],
+    ],
   },
 };
 
@@ -1638,9 +1655,45 @@ function buildBooksView() {
         <div class="series-count">${s.catalogue.length} Book${s.catalogue.length !== 1 ? 's' : ''}</div>
       </div>`;
     card.insertBefore(bg, card.firstChild);
-    card.addEventListener('click', () => enterSeries(s.id, STANDALONE_BOOKS));
+    card.addEventListener('click', () => openStandaloneBook(s.id));
     grid.appendChild(card);
   });
+
+  // lazy-load cover images for the cards
+  entries.forEach(s => {
+    const script = document.createElement('script');
+    script.src = s.coversFile;
+    script.onload = () => {
+      const covers = window[s.coversVar];
+      if (!covers) return;
+      const bg = document.getElementById(`books-bg-${s.id}`);
+      if (!bg) return;
+      bg.innerHTML = '';
+      const url = covers['01'];
+      if (url) {
+        const img = document.createElement('img');
+        img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block';
+        img.src = url;
+        bg.appendChild(img);
+      }
+    };
+    document.head.appendChild(script);
+  });
+}
+
+function openStandaloneBook(id) {
+  const s = STANDALONE_BOOKS[id];
+  if (!s) return;
+  currentSeries = s;
+  currentTint = localStorage.getItem(s.tintKey) || 'normal';
+  loadState();
+  const r = document.documentElement.style;
+  r.setProperty('--accent',      s.accent);
+  r.setProperty('--accent-dim',  s.accentDim);
+  r.setProperty('--accent-glow', s.accentGlow);
+  document.querySelectorAll('.tint-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.id === currentTint));
+  openBook('01');
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────
