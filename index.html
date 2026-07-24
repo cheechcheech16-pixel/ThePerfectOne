@@ -419,6 +419,14 @@ html,body{height:100%;width:100%;background:#000;overscroll-behavior:none;color:
     </div>
   </div>
 
+  <!-- ── HIDDEN LIBRARY (dev entry only, not linked from home) ── -->
+  <div class="view" id="view-hidden">
+    <div id="hidden-scroll">
+      <p class="series-label">Hidden</p>
+      <div class="series-grid" id="hidden-grid"></div>
+    </div>
+  </div>
+
   <!-- ── STANDALONE BOOKS ── -->
   <div class="view" id="view-books">
     <div id="books-scroll" style="flex:1;overflow-y:auto;padding:24px 16px 80px">
@@ -763,7 +771,7 @@ const HIDDEN_SERIES = {
     id: 'goodintentions',
     name: 'Good Intentions',
     sub: 'Elliott Kay',
-    bookFolder: 'HIDDEN/goodintentions',
+    bookFolder: 'SERIES/goodintentions',
     coversVar: 'GOODINTENTIONS_COVERS',
     coversFile: 'SERIES/goodintentions/covers.js',
     storeKey: 'goodintentions_data_v1',
@@ -849,10 +857,10 @@ function getSeriesReadingInfo(s) {
   } catch(e) { return {currentBookTitle:null}; }
 }
 
-function buildSeriesHome() {
-  const grid = document.getElementById('series-grid');
+function buildSeriesHomeGeneric(sourceMap, gridId, sourceMapForEnter) {
+  const grid = document.getElementById(gridId);
   grid.innerHTML = '';
-  Object.values(SERIES).forEach(s => {
+  Object.values(sourceMap).forEach(s => {
     const card = document.createElement('div');
     card.className = 'series-card';
     card.dataset.id = s.id;
@@ -860,7 +868,7 @@ function buildSeriesHome() {
     // mosaic of first 4 cover placeholders — real covers injected after covers.js loads
     const bg = document.createElement('div');
     bg.className = 'series-bg';
-    bg.id = `series-bg-${s.id}`;
+    bg.id = `series-bg-${gridId}-${s.id}`;
     // 4 shimmer tiles as placeholder until covers.js loads
     for (let i = 0; i < 4; i++) {
       const tile = document.createElement('div');
@@ -882,22 +890,22 @@ function buildSeriesHome() {
         <div class="series-count">${s.catalogue.length} Books</div>
       </div>`;
     card.insertBefore(bg, card.firstChild);
-    card.addEventListener('click', () => enterSeries(s.id));
+    card.addEventListener('click', () => enterSeries(s.id, sourceMapForEnter));
     grid.appendChild(card);
   });
 
   // lazy-load covers for mosaics
-  loadSeriesMosaics();
+  loadSeriesMosaicsGeneric(sourceMap, gridId);
 }
 
-function loadSeriesMosaics() {
-  Object.values(SERIES).forEach(s => {
+function loadSeriesMosaicsGeneric(sourceMap, gridId) {
+  Object.values(sourceMap).forEach(s => {
     const script = document.createElement('script');
     script.src = s.coversFile;
     script.onload = () => {
       const covers = window[s.coversVar];
       if (!covers) return;
-      const bg = document.getElementById(`series-bg-${s.id}`);
+      const bg = document.getElementById(`series-bg-${gridId}-${s.id}`);
       if (!bg) return;
       bg.innerHTML = '';
       ['01','02','03','04'].forEach(id => {
@@ -910,14 +918,25 @@ function loadSeriesMosaics() {
         }
       });
     };
+    script.onerror = () => {
+      console.warn(`Covers failed to load for "${s.id}" — check that ${s.coversFile} exists and defines window.${s.coversVar}`);
+    };
     document.head.appendChild(script);
   });
+}
+
+function buildSeriesHome() {
+  buildSeriesHomeGeneric(SERIES, 'series-grid', SERIES);
+}
+
+function buildHiddenHome() {
+  buildSeriesHomeGeneric(HIDDEN_SERIES, 'hidden-grid', HIDDEN_SERIES);
 }
 
 function enterSeries(id, sourceMap) {
   const src = sourceMap || SERIES;
   currentSeries = src[id];
-  currentContext = 'series';
+  currentContext = (sourceMap === HIDDEN_SERIES) ? 'hidden' : 'series';
   currentTint = localStorage.getItem(currentSeries.tintKey) || 'normal';
   loadState();
   sortAlpha = false;
@@ -1835,10 +1854,11 @@ function showView(id) {
   const inHome           = id === 'view-home';
   const inBooks          = id === 'view-books';
   const inAudiobooks     = id === 'view-audiobooks';
+  const inHidden         = id === 'view-hidden';
   const inAudioPlayer    = id === 'view-audio-player';
   const inAudioSeries    = id === 'view-audio-series';
   document.getElementById('topbar').style.display = (inReader || inHome || inAudioPlayer) ? 'none' : 'flex';
-  document.getElementById('sort-btn').style.display = (inSeries || inReader || inHome || inBooks || inAudiobooks || inAudioPlayer || inAudioSeries) ? 'none' : 'flex';
+  document.getElementById('sort-btn').style.display = (inSeries || inReader || inHome || inBooks || inAudiobooks || inHidden || inAudioPlayer || inAudioSeries) ? 'none' : 'flex';
   if (inSeries) {
     document.getElementById('topbar-title').textContent = 'MY LIBRARY';
     document.getElementById('topbar-sub').textContent  = '';
@@ -1849,6 +1869,10 @@ function showView(id) {
   }
   if (inAudiobooks) {
     document.getElementById('topbar-title').textContent = 'MY LIBRARY';
+    document.getElementById('topbar-sub').textContent  = '';
+  }
+  if (inHidden) {
+    document.getElementById('topbar-title').textContent = 'HIDDEN';
     document.getElementById('topbar-sub').textContent  = '';
   }
 }
@@ -1867,14 +1891,17 @@ window.addEventListener('popstate', () => {
   const seriesActive        = document.getElementById('view-series').classList.contains('active');
   const booksActive         = document.getElementById('view-books').classList.contains('active');
   const audiobooksActive    = document.getElementById('view-audiobooks').classList.contains('active');
+  const hiddenActive        = document.getElementById('view-hidden').classList.contains('active');
   if (readerActive)             document.getElementById('back-btn').click();
   else if (audioPlayerActive)   document.getElementById('audio-back-btn').click();
   else if (audioSeriesActive)   { buildAudiobooksView(); showView('view-audiobooks'); }
   else if (libraryActive) {
-    if (currentContext === 'standalone') { buildBooksView(); showView('view-books'); }
+    if (currentContext === 'standalone')   { buildBooksView(); showView('view-books'); }
+    else if (currentContext === 'hidden')  { buildHiddenHome(); showView('view-hidden'); }
     else { buildSeriesHome(); showView('view-series'); }
   }
   else if (seriesActive || booksActive || audiobooksActive) showView('view-home');
+  else if (hiddenActive) showView('view-home');
 });
 
 // Topbar logo: from library → series home or books list depending on context; from series/books/audiobooks → home landing
@@ -1883,6 +1910,9 @@ document.getElementById('topbar-logo').addEventListener('click', () => {
     if (currentContext === 'standalone') {
       buildBooksView();
       showView('view-books');
+    } else if (currentContext === 'hidden') {
+      buildHiddenHome();
+      showView('view-hidden');
     } else {
       buildSeriesHome();
       showView('view-series');
@@ -1893,7 +1923,8 @@ document.getElementById('topbar-logo').addEventListener('click', () => {
   } else if (
     document.getElementById('view-series').classList.contains('active') ||
     document.getElementById('view-books').classList.contains('active') ||
-    document.getElementById('view-audiobooks').classList.contains('active')
+    document.getElementById('view-audiobooks').classList.contains('active') ||
+    document.getElementById('view-hidden').classList.contains('active')
   ) {
     showView('view-home');
   }
@@ -1917,7 +1948,9 @@ document.getElementById('topbar-logo').addEventListener('click', () => {
     if (count >= TARGET) {
       count = 0;
       clearTimeout(resetTimer);
-      enterSeries('goodintentions', HIDDEN_SERIES);
+      buildHiddenHome();
+      showView('view-hidden');
+      history.pushState({}, '');
     }
   }
 
