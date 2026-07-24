@@ -190,7 +190,7 @@ html,body{height:100%;width:100%;background:#000;overscroll-behavior:none;color:
 /* ── HOME LANDING ─────────────────────────────────────────────── */
 #view-home{background:#000;align-items:center;justify-content:center}
 #home-inner{display:flex;flex-direction:column;align-items:center;width:100%;padding:0 24px;gap:0}
-#home-wordmark{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--amber);letter-spacing:.04em;text-align:center;margin-bottom:4px;text-shadow:0 0 32px rgba(200,144,58,.35)}
+#home-wordmark{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--amber);letter-spacing:.04em;text-align:center;margin-bottom:4px;text-shadow:0 0 32px rgba(200,144,58,.35);user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
 #home-wordmark span{color:var(--text-dim);font-style:italic;font-size:.85rem;font-weight:400;display:block;letter-spacing:.14em;margin-top:2px}
 .home-divider{width:48px;height:1px;background:var(--border);margin:28px auto 32px}
 .home-choice{display:flex;flex-direction:column;gap:14px;width:100%;max-width:340px}
@@ -1902,11 +1902,21 @@ document.getElementById('topbar-logo').addEventListener('click', () => {
 // ─── HIDDEN DEV ENTRY (home screen only) ──────────────────────────
 (function() {
   const TARGET = 8;
-  const RESET_MS = 1500;
+  const RESET_MS = 2500;
+  const wordmark = document.getElementById('home-wordmark');
   let count = 0;
   let resetTimer = null;
+  let lastFire = 0;
 
-  document.getElementById('home-wordmark').addEventListener('click', () => {
+  function registerTap(e) {
+    // Prevent the double-tap turning into text selection / zoom, which can eat taps
+    e.preventDefault();
+
+    // Dedup: touchstart + click can both fire for the same physical tap
+    const now = Date.now();
+    if (now - lastFire < 80) return;
+    lastFire = now;
+
     count++;
     clearTimeout(resetTimer);
     resetTimer = setTimeout(() => { count = 0; }, RESET_MS);
@@ -1916,7 +1926,10 @@ document.getElementById('topbar-logo').addEventListener('click', () => {
       clearTimeout(resetTimer);
       enterSeries('goodinetentions', HIDDEN_SERIES);
     }
-  });
+  }
+
+  wordmark.addEventListener('touchstart', registerTap, {passive:false});
+  wordmark.addEventListener('click', registerTap);
 })();
 
 // ─── HOME LANDING BUTTONS ─────────────────────────────────────────
