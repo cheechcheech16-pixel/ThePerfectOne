@@ -616,33 +616,6 @@ const SERIES = {
       ['#1a0808','#8b1a1a'],['#100a1a','#501080'],['#081a12','#0a6b3a'],
       ['#1a0808','#7a0a0a'],
     ],
-  },
-  goodintentions: {
-    id: 'goodintentions',
-    name: 'Good Intentions',
-    sub: 'Elliott Kay',
-    bookFolder: 'SERIES/goodintentions',
-    coversVar: 'GOODINTENTIONS_COVERS',
-    coversFile: 'SERIES/goodintentions/covers.js',
-    storeKey: 'goodintentions_data_v1',
-    tintKey: 'goodintentions_tint',
-    accent: '#c0392b', accentDim: '#8b1a1a', accentGlow: '#e05050',
-    catalogue: [
-      {id:'01',num:'1',  title:'Good Intentions'},
-      {id:'02',num:'2',  title:'Natural Consequences'},
-      {id:'03',num:'3',  title:'Life in Shadows', novella:true},
-      {id:'04',num:'4',  title:'Personal Demons'},
-      {id:'05',num:'5',  title:'Past Due'},
-      {id:'06',num:'6',  title:'Devil in the Details'},
-    ],
-    spineColors: [
-      ['#1a0a0a','#6b1a1a'],
-      ['#1a0d08','#7a3010'],
-      ['#0d1a0d','#2d6b2d'],
-      ['#0a0d1a','#1a3a6b'],
-      ['#1a1208','#7a5f10'],
-      ['#1a0810','#6b1040'],
-    ],
   },  
   harrypotter: {
     id: 'harrypotter',
@@ -781,6 +754,38 @@ const SERIES = {
       ['#0d1a0d','#2d6b2d'],
     ],
   },
+};
+
+// ─── HIDDEN (not part of any visible grid — accessed only via dev entry) ──
+const HIDDEN_SERIES = {
+
+  goodintentions: {
+    id: 'goodintentions',
+    name: 'Good Intentions',
+    sub: 'Elliott Kay',
+    bookFolder: 'SERIES/goodintentions',
+    coversVar: 'GOODINTENTIONS_COVERS',
+    coversFile: 'SERIES/goodintentions/covers.js',
+    storeKey: 'goodintentions_data_v1',
+    tintKey: 'goodintentions_tint',
+    accent: '#c0392b', accentDim: '#8b1a1a', accentGlow: '#e05050',
+    catalogue: [
+      {id:'01',num:'1',  title:'Good Intentions'},
+      {id:'02',num:'2',  title:'Natural Consequences'},
+      {id:'03',num:'3',  title:'Life in Shadows', novella:true},
+      {id:'04',num:'4',  title:'Personal Demons'},
+      {id:'05',num:'5',  title:'Past Due'},
+      {id:'06',num:'6',  title:'Devil in the Details'},
+    ],
+    spineColors: [
+      ['#1a0a0a','#6b1a1a'],
+      ['#1a0d08','#7a3010'],
+      ['#0d1a0d','#2d6b2d'],
+      ['#0a0d1a','#1a3a6b'],
+      ['#1a1208','#7a5f10'],
+      ['#1a0810','#6b1040'],
+    ],
+  },  
 };
 
 // ─── TINTS ────────────────────────────────────────────────────────
@@ -1893,6 +1898,26 @@ document.getElementById('topbar-logo').addEventListener('click', () => {
     showView('view-home');
   }
 });
+
+// ─── HIDDEN DEV ENTRY (home screen only) ──────────────────────────
+(function() {
+  const TARGET = 8;
+  const RESET_MS = 1500;
+  let count = 0;
+  let resetTimer = null;
+
+  document.getElementById('home-wordmark').addEventListener('click', () => {
+    count++;
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(() => { count = 0; }, RESET_MS);
+
+    if (count >= TARGET) {
+      count = 0;
+      clearTimeout(resetTimer);
+      enterSeries('goodinetentions', HIDDEN_SERIES);
+    }
+  });
+})();
 
 // ─── HOME LANDING BUTTONS ─────────────────────────────────────────
 document.getElementById('home-series-btn').addEventListener('click', () => {
