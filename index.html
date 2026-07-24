@@ -763,7 +763,7 @@ const HIDDEN_SERIES = {
     id: 'goodintentions',
     name: 'Good Intentions',
     sub: 'Elliott Kay',
-    bookFolder: 'SERIES/goodintentions',
+    bookFolder: 'HIDDEN/goodintentions',
     coversVar: 'GOODINTENTIONS_COVERS',
     coversFile: 'SERIES/goodintentions/covers.js',
     storeKey: 'goodintentions_data_v1',
@@ -1902,20 +1902,13 @@ document.getElementById('topbar-logo').addEventListener('click', () => {
 // ─── HIDDEN DEV ENTRY (home screen only) ──────────────────────────
 (function() {
   const TARGET = 8;
-  const RESET_MS = 2500;
+  const RESET_MS = 3000;
   const wordmark = document.getElementById('home-wordmark');
   let count = 0;
   let resetTimer = null;
-  let lastFire = 0;
 
   function registerTap(e) {
-    // Prevent the double-tap turning into text selection / zoom, which can eat taps
-    e.preventDefault();
-
-    // Dedup: touchstart + click can both fire for the same physical tap
-    const now = Date.now();
-    if (now - lastFire < 80) return;
-    lastFire = now;
+    if (e.cancelable) e.preventDefault();
 
     count++;
     clearTimeout(resetTimer);
@@ -1924,11 +1917,12 @@ document.getElementById('topbar-logo').addEventListener('click', () => {
     if (count >= TARGET) {
       count = 0;
       clearTimeout(resetTimer);
-      enterSeries('goodinetentions', HIDDEN_SERIES);
+      enterSeries('goodintentions', HIDDEN_SERIES);
     }
   }
 
-  wordmark.addEventListener('touchstart', registerTap, {passive:false});
+  // click fires correctly for both mouse clicks and touch taps —
+  // no need to double-listen on touchstart, which was causing dupes/drops
   wordmark.addEventListener('click', registerTap);
 })();
 
